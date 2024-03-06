@@ -1,0 +1,18 @@
+{
+  "name": "web3promax/binance",
+  "version": "1.0.0",
+  "description": "A PHP wrapper for the Binance API endpoints.",
+  "keywords": ["binance", "cryptocurrency", "php", "api", "wrapper-api", "php-library", "cryptocurrency-exchanges"],
+  "homepage": "https://github.com/web3promax/php-binance",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.3",
+    "guzzlehttp/guzzle": "^7.8",
+    "ratchet/pawl": "^0.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Binance\\": "src/"
+    }
+  }
+}
