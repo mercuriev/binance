@@ -13,14 +13,14 @@ class Kline extends Event
     protected string $interval;
     protected int $firstTradeId;
     protected int $lastTradeId;
-    protected float $openPrice;
-    protected float $closePrice;
-    protected float $highPrice;
-    protected float $lowPrice;
-    protected float $baseAssetVolume;
+    protected float $open;
+    protected float $close;
+    protected float $high;
+    protected float $low;
+    protected float $volumeBase;
     protected int $numberOfTrades;
-    protected bool $isKlineClosed;
-    protected float $quoteAssetVolume;
+    protected bool $isClosed;
+    protected float $volumeQuote;
     protected float $takerBuyBaseAssetVolume;
     protected float $takerBuyQuoteAssetVolume;
 
@@ -36,15 +36,31 @@ class Kline extends Event
         $this->interval = $payload['i'];
         $this->firstTradeId = $payload['f'];
         $this->lastTradeId = $payload['L'];
-        $this->openPrice = floatval($payload['o']);
-        $this->closePrice = floatval($payload['c']);
-        $this->highPrice = floatval($payload['h']);
-        $this->lowPrice = floatval($payload['l']);
-        $this->baseAssetVolume = floatval($payload['v']);
+        $this->open = floatval($payload['o']);
+        $this->close = floatval($payload['c']);
+        $this->high = floatval($payload['h']);
+        $this->low = floatval($payload['l']);
+        $this->volumeBase = floatval($payload['v']);
+        $this->volumeQuote = floatval($payload['q']);
         $this->numberOfTrades = $payload['n'];
-        $this->isKlineClosed = $payload['x'];
-        $this->quoteAssetVolume = floatval($payload['q']);
+        $this->isClosed = $payload['x'];
         $this->takerBuyBaseAssetVolume = floatval($payload['V']);
         $this->takerBuyQuoteAssetVolume = floatval($payload['Q']);
+    }
+
+    public function getChange(): float
+    {
+        $diff = $this->close - $this->open;
+        return round($diff / ($this->open * 100), 4);
+    }
+
+    public function isGreen() : bool
+    {
+        return $this->getChange() > 0;
+    }
+
+    public function isRed() : bool
+    {
+        return !$this->isGreen();
     }
 }

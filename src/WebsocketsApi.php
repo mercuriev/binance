@@ -11,6 +11,7 @@ use Binance\Event\MiniTicker;
 use Binance\Event\Ticker;
 use Binance\Event\Trade;
 use WebSocket\Client;
+use WebSocket\TimeoutException;
 
 /**
  * This extends AbstractApi to enable factory only.
@@ -20,6 +21,23 @@ class WebsocketsApi extends AbstractApi
 {
     const API_URL = 'wss://stream.binance.com:9443';
     const API_PATH = '/ws/bookTicker';
+
+    const INTERVAL_1S = '1s';
+    const INTERVAL_1M = '1m';
+    const INTERVAL_3M = '3m';
+    const INTERVAL_5M = '5m';
+    const INTERVAL_15M = '15m';
+    const INTERVAL_30M = '30m';
+    const INTERVAL_1H = '1h';
+    const INTERVAL_2H = '2h';
+    const INTERVAL_4H = '4h';
+    const INTERVAL_6H = '6h';
+    const INTERVAL_8H = '8h';
+    const INTERVAL_12H = '12h';
+    const INTERVAL_1D = '1d';
+    const INTERVAL_3D = '3d';
+    const INTERVAL_1W = '1w';
+    const INTERVAL_ONE_MONTH = '1M';
 
     protected Client $ws;
 
@@ -31,11 +49,15 @@ class WebsocketsApi extends AbstractApi
     /**
      * Fetch the next incoming message from stream.
      */
-    public function __invoke() : bool|Event
+    public function __invoke(int $timeout = 5) : null|bool|Event
     {
-        if (!$this->ws->isConnected()) throw new \RuntimeException('Lost connection to server.');
-
-        $res = $this->ws->receive();
+        $this->ws->setTimeout($timeout);
+        try {
+            $res = $this->ws->receive();
+        }
+        catch (TimeoutException) {
+            return null;
+        }
 
         if (is_numeric($res)) xdebug_break();
 
@@ -58,17 +80,26 @@ class WebsocketsApi extends AbstractApi
         };
     }
 
+    public function receive() : bool|Event
+    {
+        return ($this)();
+    }
+
     /**
+     * Generic raw access to topics. See other methods for clear interface.
+     *
      * @param string|array $topics
      * @return bool
      * @throws \RuntimeException|\WebSocket\BadOpcodeException
      */
     public function subscribe(string|array $topics) : bool
     {
+        $topics = is_array($topics) ? $topics : [$topics];
+        $topics = array_map('strtolower', $topics);
         $payload = [
             'id' => null,
             'method' => 'SUBSCRIBE',
-            'params' => is_array($topics) ? $topics : [$topics]
+            'params' => $topics
         ];
         $this->ws->send(json_encode($payload));
 
@@ -77,5 +108,10 @@ class WebsocketsApi extends AbstractApi
         } else {
             throw new \RuntimeException("Failed to subscribe");
         }
+    }
+
+    public function kline(string $symbol, string $interval)
+    {
+        return $this->subscribe("$symbol@kline_$interval");
     }
 }

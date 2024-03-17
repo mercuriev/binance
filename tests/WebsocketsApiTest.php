@@ -1,6 +1,7 @@
 <?php
 
 use Binance\Event\Event;
+use Binance\Event\Kline;
 use Binance\WebsocketsApi;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -29,6 +30,17 @@ class WebsocketsApiTest extends TestCase
         $api = new WebsocketsApi();
         $res = $api->subscribe('btcusdt@aggTrade');
         $this->assertTrue($res);
+    }
+
+    public function testKline()
+    {
+        $api = new WebsocketsApi();
+        $res = $api->kline('BTCFDUSD', WebsocketsApi::INTERVAL_1S);
+
+        $kline = $api(2);
+        $this->assertInstanceOf(Kline::class, $kline);
+
+        $this->assertIsFloat($kline->getChange());
     }
 
     static public function invokeProvider() : array
