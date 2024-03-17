@@ -4,7 +4,7 @@ namespace Binance\Event;
 
 class Depth extends Event
 {
-    protected \DateTime $eventTime;
+    protected \DateTime $time;
     protected string $symbol;
     protected int $firstUpdateId;
     protected int $finalUpdateId;
@@ -13,7 +13,7 @@ class Depth extends Event
 
     public function __construct(array $payload)
     {
-        $this->eventTime = new \DateTime("@".intval($payload['E']/1000));
+        $this->time = new \DateTime("@".intval($payload['E']/1000));
         $this->symbol = $payload['s'];
         $this->firstUpdateId = intval($payload['U']);
         $this->finalUpdateId = intval($payload['u']);

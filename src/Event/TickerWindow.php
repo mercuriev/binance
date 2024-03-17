@@ -6,7 +6,7 @@ use Binance\Event\Event;
 
 class TickerWindow extends Event
 {
-    protected \DateTime $eventTime;
+    protected \DateTime $time;
     protected string    $symbol;
     protected float     $priceChange;
     protected float     $priceChangePercent;
@@ -25,7 +25,7 @@ class TickerWindow extends Event
 
     public function __construct(array $payload)
     {
-        $this->eventTime = new \DateTime("@".intval($payload['E']/1000));
+        $this->time = new \DateTime("@".intval($payload['E']/1000));
         $this->symbol = $payload['s'];
         $this->priceChange = floatval($payload['p']);
         $this->priceChangePercent = floatval($payload['P']);

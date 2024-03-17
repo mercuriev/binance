@@ -4,7 +4,7 @@ namespace Binance\Event;
 
 class MiniTicker extends Event
 {
-    protected \DateTime $eventTime;
+    protected \DateTime $time;
     protected string    $symbol;
     protected float     $closePrice;
     protected float     $openPrice;
@@ -15,7 +15,7 @@ class MiniTicker extends Event
 
     public function __construct(array $payload)
     {
-        $this->eventTime = new \DateTime("@".intval($payload['E']/1000));
+        $this->time = new \DateTime("@".intval($payload['E']/1000));
         $this->symbol = $payload['s'];
         $this->closePrice = floatval($payload['c']);
         $this->openPrice = floatval($payload['o']);

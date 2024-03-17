@@ -9,4 +9,9 @@ class Event
     {
         foreach ($payload as $k => $v) $this->$k = $v;
     }
+
+    public function __toString() : string
+    {
+        return json_encode($this, JSON_PRETTY_PRINT);
+    }
 }

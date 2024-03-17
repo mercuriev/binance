@@ -23,7 +23,6 @@ class Kline extends Event
     protected float $quoteAssetVolume;
     protected float $takerBuyBaseAssetVolume;
     protected float $takerBuyQuoteAssetVolume;
-    protected string $ignore;
 
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
@@ -47,6 +46,5 @@ class Kline extends Event
         $this->quoteAssetVolume = floatval($payload['q']);
         $this->takerBuyBaseAssetVolume = floatval($payload['V']);
         $this->takerBuyQuoteAssetVolume = floatval($payload['Q']);
-        $this->ignore = $payload['B'];
     }
 }
