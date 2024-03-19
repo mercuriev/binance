@@ -23,21 +23,21 @@ class OcoOrder extends AbstractOrder
     public float $stopLimitPrice = 0;
     public string $stopLimitTimeInForce = 'GTC';
 
-    public function getDealId()
+    public function getDealId(): string
     {
         $parts = explode('-', $this->listClientOrderId);
         return array_pop($parts);
     }
 
-    public function merge(array|AbstractOrder $reply) : static
+    public function merge($reply) : static
     {
         foreach ($reply as $k => $v) {
             if ('orderReports' == $k) {
                 foreach ($v as &$order) {
                     if ($order instanceof AbstractOrder) continue;
-                    $obj = 'LIMIT_MAKER' == $order['type'] ? new LimitOrder() : new StopOrder();
-                    $obj->merge($order);
-                    $order = $obj;
+                    $typeObject = $order->type === 'LIMIT_MAKER' ? new LimitOrder() : new StopOrder();
+                    $typeObject->merge($order);
+                    $order = $typeObject;
                 }
             }
             $this->$k = $v;
@@ -55,7 +55,7 @@ class OcoOrder extends AbstractOrder
         return $this->listClientOrderId;
     }
 
-    public function getId()
+    public function getId(): string
     {
         return $this->orderListId;
     }
@@ -68,31 +68,36 @@ class OcoOrder extends AbstractOrder
     public function getQty() : float
     {
         foreach ($this->orderReports as $o) {
-            return $o['origQty'];
+            return $o->origQty;
         }
+        throw new \RuntimeException('Empty orderReports');
     }
 
-    public function getStopQty()
+    public function getStopQty() : float
     {
         foreach ($this->orderReports as $order) {
-            if ('STOP_LOSS_LIMIT' == $order['type']) {
-                return $order['origQty'];
+            if ($order->type === 'STOP_LOSS_LIMIT') {
+                return $order->origQty;
             }
         }
         throw new \RuntimeException('Unable to find stop loss order.');
     }
 
-    public function getExecutedQty()
+    public function getExecutedQty(): float
     {
         $qty = 0;
-        foreach ($this->orderReports as $order) $qty += $order->executedQty;
+        foreach ($this->orderReports as $order) {
+            $qty += $order->executedQty;
+        }
         return $qty;
     }
 
     public function getExecutedPrice()
     {
-        foreach ($this->orderReports as $o) if ('FILLED' == $o->status) {
-            return 'STOP_LOSS_LIMIT' == $o->type ? $o->stopPrice : $o->price;
+        foreach ($this->orderReports as $o) {
+            if ($o->status === 'FILLED') {
+                return $o->type === 'STOP_LOSS_LIMIT' ? $o->stopPrice : $o->price;
+            }
         }
         throw new \RuntimeException('No filled orders to find price.');
     }
@@ -104,15 +109,21 @@ class OcoOrder extends AbstractOrder
 
     public function getLimitOrder()
     {
-        foreach ($this->orderReports as $o)
-            if ('LIMIT_MAKER' == $o->type) return $o;
+        foreach ($this->orderReports as $o) {
+            if ($o->type === 'LIMIT_MAKER') {
+                return $o;
+            }
+        }
         throw new \RuntimeException('Unable to find limit order.');
     }
 
     public function getStopOrder()
     {
-        foreach ($this->orderReports as $o)
-            if ('STOP_LOSS_LIMIT' == $o->type) return $o;
+        foreach ($this->orderReports as $o) {
+            if ($o->type === 'STOP_LOSS_LIMIT') {
+                return $o;
+            }
+        }
         throw new \RuntimeException('Unable to find stop loss order.');
     }
 
@@ -121,7 +132,7 @@ class OcoOrder extends AbstractOrder
         return $this->getLimitOrder()->price;
     }
 
-    public function setPrice(float $price)
+    public function setPrice(float $price): static
     {
         $this->getLimitOrder()->price = $price;
         return $this;
@@ -140,12 +151,14 @@ class OcoOrder extends AbstractOrder
 
     public function isFilled() : bool
     {
-        if (isset($this->orderReports))
-            foreach ($this->orderReports as $o)
+        if (isset($this->orderReports)) {
+            foreach ($this->orderReports as $o) {
                 if (10 >= ($o->origQty - $o->executedQty) * $o->price) {
                     $o->status = 'FILLED';
                     return true;
                 }
+            }
+        }
         return false;
     }
 
@@ -154,7 +167,7 @@ class OcoOrder extends AbstractOrder
         if (isset($this->orderReports))
             foreach ($this->orderReports as $o)
                 if ($o->executedQty > 0 && $o->executedQty != $o->origQty) return true;
-        else return false;
+        return false;
     }
 
     public function getFilled() : LimitOrder|MarketOrder|StopOrder
@@ -170,29 +183,30 @@ class OcoOrder extends AbstractOrder
         return $this->listOrderStatus == 'ALL_DONE';
     }
 
-    public function isNew()
+    public function isNew(): bool
     {
         return @$this->listOrderStatus == 'EXECUTING';
     }
 
-    public function isCanceled()
+    public function isCanceled(): bool
     {
         // partially filled orders do not have the other 'expired' order in reports
         foreach ($this->orderReports as $o) if (!in_array($o->status, ['CANCELED', 'EXPIRED'])) return false;
         return true;
     }
 
-    public function isSamePrice(OcoOrder $order)
+    public function isSamePrice(OcoOrder $order): bool
     {
         return abs($order->price     - $this->price)        <= 0.1
             && abs($order->stopPrice - $this->stopPrice)    <= 0.1;
     }
 
-    public function setClientId(string $prefix, string $direction = 'in')
+    public function setClientId(string $prefix, string $direction = 'in'): static
     {
         $id = $this->generateClientId($prefix, $direction);
         $this->listClientOrderId = $id;
         $this->limitClientOrderId = "$id-limit";
         $this->stopClientOrderId = "$id-stop";
+        return $this;
     }
 }

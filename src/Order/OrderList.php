@@ -1,8 +1,7 @@
 <?php
 namespace Binance\Order;
 
-use Binance\Db\Deal;
-use Binance\Trade;
+use Binance\Event\Trade;
 use function Binance\truncate;
 
 class OrderList extends \Laminas\Stdlib\ArrayObject

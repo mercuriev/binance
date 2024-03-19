@@ -1,6 +1,8 @@
 <?php
 namespace Binance\Account;
 
+use function Binance\truncate;
+
 /**
  * @property string $symbol
  * @property array $baseAsset
@@ -51,38 +53,42 @@ class MarginIsolatedAccount extends Account
         return (string) $this;
     }
 
-    public function getNetWorth() : float
+    public function getNetWorth(): float
     {
-        $asset = $this->raw['quoteAsset']['netAssetOfBtc']
-                + $this->raw['baseAsset']['netAssetOfBtc'];
-        $asset *= $this->raw['indexPrice'];
+        $asset = $this->quoteAsset->netAssetOfBtc
+            + $this->baseAsset->netAssetOfBtc;
+        $asset *= $this->indexPrice;
         return $asset;
     }
 
-    public function getQuoteName() : string
+    public function getQuoteName(): string
     {
-        return $this->raw['quoteAsset']['asset'];
-    }
-    public function getBaseName() : string
-    {
-        return $this->raw['baseAsset']['asset'];
-    }
-    public function getQuoteSlice(int $parts = 2) : float
-    {
-        return self::truncate($this['quoteAsset']['free'] / $parts, 2);
-    }
-    public function getBaseSlice(int $parts = 2) : float
-    {
-        return self::truncate(($this['baseAsset']['free']) / $parts, 2);
+        return $this->quoteAsset->asset;
     }
 
-    public function getQuoteTotal() : float
+    public function getBaseName(): string
     {
-        return self::truncate($this->raw['quoteAsset']['free'] + $this->raw['quoteAsset']['locked'], 2);
+        return $this->baseAsset->asset;
     }
-    public function getBaseTotal() : float
+
+    public function getQuoteSlice(int $parts = 2): float
     {
-        return self::truncate($this->raw['baseAsset']['free'] + $this->raw['baseAsset']['locked'], 5);
+        return truncate($this->quoteAsset->free / $parts, 2);
+    }
+
+    public function getBaseSlice(int $parts = 2): float
+    {
+        return truncate($this->baseAsset->free / $parts, 2);
+    }
+
+    public function getQuoteTotal(): float
+    {
+        return truncate($this->quoteAsset->free + $this->quoteAsset->locked, 2);
+    }
+
+    public function getBaseTotal(): float
+    {
+        return truncate($this->baseAsset->free + $this->baseAsset->locked, 5);
     }
 
     public function hasFiat() : bool

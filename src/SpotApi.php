@@ -18,9 +18,10 @@ class SpotApi extends AbstractApi
      *
      * @link https://www.binance.com/restapipub.html#account-information-signed
      */
-    public function getAccount(array $params = null)
+    public function getAccount(array $params = null) : array
     {
         $params = $params ?? ['timestamp' => time() * 1000];
-        return $this->_makeApiRequest('GET', 'account', 'SIGNED', $params + ['timestamp' => time() * 1000]);
+        $req = self::buildRequest('GET', 'account', $params);
+        return $this->request($req, self::SEC_SIGNED);
     }
 }

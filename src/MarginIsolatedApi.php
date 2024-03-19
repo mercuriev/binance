@@ -203,7 +203,6 @@ class MarginIsolatedApi extends AbstractApi
     public function cancelAll(string $clientIdPrefix = '') : int
     {
         $res = $this->getOpenOrders();
-        if (null === $res) return 0;
 
         $done = 0;
         foreach($res as $order) {

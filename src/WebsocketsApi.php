@@ -59,8 +59,6 @@ class WebsocketsApi extends AbstractApi
             return null;
         }
 
-        if (is_numeric($res)) xdebug_break();
-
         $res = json_decode($res, true);
 
         // API acknowledged last request

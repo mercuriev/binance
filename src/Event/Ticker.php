@@ -4,25 +4,17 @@ namespace Binance\Event;
 
 use Binance\Event\Event;
 
-class Ticker extends Event
+class Ticker extends MiniTicker
 {
-    protected \DateTime $time;
-    protected string    $symbol;
     protected float     $priceChange;
     protected float     $priceChangePercent;
     protected float     $weightedAvgPrice;
     protected float     $firstTradePrice;
-    protected float     $lastPrice;
     protected float     $lastQuantity;
     protected float     $bestBidPrice;
     protected float     $bestBidQuantity;
     protected float     $bestAskPrice;
     protected float     $bestAskQuantity;
-    protected float     $openPrice;
-    protected float     $highPrice;
-    protected float     $lowPrice;
-    protected float     $baseAssetVolume;
-    protected float     $quoteAssetVolume;
     protected \DateTime $statisticsOpenTime;
     protected \DateTime $statisticsCloseTime;
     protected int       $firstTradeId;
@@ -31,27 +23,19 @@ class Ticker extends Event
 
     public function __construct(array $payload)
     {
-        $this->time = new \DateTime("@".intval($payload['E']/1000));
-        $this->symbol = $payload['s'];
-        $this->priceChange = floatval($payload['p']);
-        $this->priceChangePercent = floatval($payload['P']);
-        $this->weightedAvgPrice = floatval($payload['w']);
-        $this->firstTradePrice = floatval($payload['x']);
-        $this->lastPrice = floatval($payload['c']);
-        $this->lastQuantity = floatval($payload['Q']);
-        $this->bestBidPrice = floatval($payload['b']);
-        $this->bestBidQuantity = floatval($payload['B']);
-        $this->bestAskPrice = floatval($payload['a']);
-        $this->bestAskQuantity = floatval($payload['A']);
-        $this->openPrice = floatval($payload['o']);
-        $this->highPrice = floatval($payload['h']);
-        $this->lowPrice = floatval($payload['l']);
-        $this->baseAssetVolume = floatval($payload['v']);
-        $this->quoteAssetVolume = floatval($payload['q']);
-        $this->statisticsOpenTime = new \DateTime("@".intval($payload['O']/1000));
-        $this->statisticsCloseTime = new \DateTime("@".intval($payload['C']/1000));
-        $this->firstTradeId = $payload['F'];
-        $this->lastTradeId = $payload['L'];
-        $this->totalNumberOfTrades = $payload['n'];
+        parent::__construct($payload);
+        $this->priceChangePercent     = floatval($payload['P']);
+        $this->weightedAvgPrice       = floatval($payload['w']);
+        $this->firstTradePrice        = floatval($payload['x']);
+        $this->lastQuantity           = floatval($payload['Q']);
+        $this->bestBidPrice           = floatval($payload['b']);
+        $this->bestBidQuantity        = floatval($payload['B']);
+        $this->bestAskPrice           = floatval($payload['a']);
+        $this->bestAskQuantity        = floatval($payload['A']);
+        $this->statisticsOpenTime     = new \DateTime("@".intval($payload['O']/1000));
+        $this->statisticsCloseTime    = new \DateTime("@".intval($payload['C']/1000));
+        $this->firstTradeId           = $payload['F'];
+        $this->lastTradeId            = $payload['L'];
+        $this->totalNumberOfTrades    = $payload['n'];
     }
 }

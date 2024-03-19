@@ -2,8 +2,6 @@
 
 namespace Binance\Order;
 
-use Binance\Enums\BinanceApi;
-
 /**
  * @property int $orderId
  * @property array[] $fills

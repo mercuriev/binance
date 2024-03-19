@@ -14,7 +14,7 @@ abstract class AbstractPayload
         return $this->toJson();
     }
 
-    public function toJson()
+    public function toJson(): false|string
     {
         return json_encode($this, true, JSON_PRETTY_PRINT);
     }

@@ -7,6 +7,8 @@ use function Binance\truncate;
 
 /**
  * @property string $status
+ * @property $executedQty
+ * @property float $cummulativeQuoteQty
  */
 #[\AllowDynamicProperties]
 class AbstractOrder extends AbstractPayload
@@ -18,7 +20,7 @@ class AbstractOrder extends AbstractPayload
     public int $recvWindow;
     public string $isIsolated = 'TRUE';
 
-    public static function fromApi(array $reply)
+    public static function fromApi(array $reply) : static
     {
         if (isset($reply['contingencyType'])) {
             return (new OcoOrder())->merge($reply);
@@ -92,7 +94,7 @@ class AbstractOrder extends AbstractPayload
         return $this->type;
     }
 
-    public function getDealId()
+    public function getDealId() : string
     {
         $parts = explode('-', $this->clientOrderId);
         return array_pop($parts);
@@ -124,7 +126,7 @@ class AbstractOrder extends AbstractPayload
      */
     public function getAmount() : float
     {
-        return (float) $this->cummulativeQuoteQty;
+        return $this->cummulativeQuoteQty;
     }
 
     public function getExecutedAmount() : float
@@ -132,12 +134,12 @@ class AbstractOrder extends AbstractPayload
         return $this->getAmount();
     }
 
-    public function getAge()
+    public function getAge() : int
     {
         return time() - $this->getDatetime()->getTimestamp();
     }
 
-    public function isOco()
+    public function isOco() : bool
     {
         return @$this->contingencyType == 'OCO';
     }
@@ -161,27 +163,27 @@ class AbstractOrder extends AbstractPayload
         return \Datetime::createFromFormat('U.v', $time);
     }
 
-    public function isFilled()
+    public function isFilled() : bool
     {
         return 'FILLED' == $this->status;
     }
 
-    public function isPartiallyFilled()
+    public function isPartiallyFilled() : bool
     {
         return isset($this->executedQty) && $this->executedQty > 0 && $this->executedQty != $this->origQty;
     }
 
-    public function isNew()
+    public function isNew() : bool
     {
         return @$this->status == 'NEW';
     }
 
-    public function isCanceled()
+    public function isCanceled(): bool
     {
         return @$this->status == 'CANCELED';
     }
 
-    public function isStop()
+    public function isStop(): bool
     {
         return @$this->type == 'STOP_LOSS_LIMIT';
     }
@@ -192,7 +194,6 @@ class AbstractOrder extends AbstractPayload
             return floatval($this->price);
         }
         else {
-            xdebug_break();
             throw new \RuntimeException('Cannot find price.');
         }
     }
@@ -217,12 +218,13 @@ class AbstractOrder extends AbstractPayload
         }
     }
 
-    public function setClientId(string $prefix, string $direction = 'in')
+    public function setClientId(string $prefix, string $direction = 'in'): static
     {
         $this->newClientOrderId = $this->generateClientId($prefix, $direction);
+        return  $this;
     }
 
-    protected function generateClientId(string $prefix, string $direction)
+    protected function generateClientId(string $prefix, string $direction): string
     {
         return join('-', [$prefix, uniqid(), $direction]);
     }
