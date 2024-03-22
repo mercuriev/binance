@@ -6,20 +6,20 @@ use Binance\Event\Event;
 
 class Ticker extends MiniTicker
 {
-    protected float     $priceChange;
-    protected float     $priceChangePercent;
-    protected float     $weightedAvgPrice;
-    protected float     $firstTradePrice;
-    protected float     $lastQuantity;
-    protected float     $bestBidPrice;
-    protected float     $bestBidQuantity;
-    protected float     $bestAskPrice;
-    protected float     $bestAskQuantity;
-    protected \DateTime $statisticsOpenTime;
-    protected \DateTime $statisticsCloseTime;
-    protected int       $firstTradeId;
-    protected int       $lastTradeId;
-    protected int       $totalNumberOfTrades;
+    public float     $priceChange;
+    public float     $priceChangePercent;
+    public float     $weightedAvgPrice;
+    public float     $firstTradePrice;
+    public float     $lastQuantity;
+    public float     $bestBidPrice;
+    public float     $bestBidQuantity;
+    public float     $bestAskPrice;
+    public float     $bestAskQuantity;
+    public \DateTime $statisticsOpenTime;
+    public \DateTime $statisticsCloseTime;
+    public int       $firstTradeId;
+    public int       $lastTradeId;
+    public int       $totalNumberOfTrades;
 
     public function __construct(array $payload)
     {

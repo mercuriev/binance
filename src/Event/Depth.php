@@ -4,12 +4,12 @@ namespace Binance\Event;
 
 class Depth extends Event
 {
-    protected \DateTime $time;
-    protected string $symbol;
-    protected int $firstUpdateId;
-    protected int $finalUpdateId;
-    protected array $bids;
-    protected array $asks;
+    public \DateTime $time;
+    public string $symbol;
+    public int $firstUpdateId;
+    public int $finalUpdateId;
+    public array $bids;
+    public array $asks;
 
     public function __construct(array $payload)
     {

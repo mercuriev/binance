@@ -4,15 +4,15 @@ namespace Binance\Event;
 
 class AggTrade extends Event
 {
-    protected \DateTime $time;
-    protected string    $symbol;
-    protected int       $id;
-    protected float     $price;
-    protected float     $quantity;
-    protected int       $firstTrade;
-    protected int       $lastTrade;
-    protected \DateTime $tradeTime;
-    protected bool      $buyerIsMaker;
+    public \DateTime $time;
+    public string    $symbol;
+    public int       $id;
+    public float     $price;
+    public float     $quantity;
+    public int       $firstTrade;
+    public int       $lastTrade;
+    public \DateTime $tradeTime;
+    public bool      $buyerIsMaker;
 
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)

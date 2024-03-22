@@ -4,14 +4,14 @@ namespace Binance\Event;
 
 class MiniTicker extends Event
 {
-    protected \DateTime $time;
-    protected string    $symbol;
-    protected float     $closePrice;
-    protected float     $openPrice;
-    protected float     $highPrice;
-    protected float     $lowPrice;
-    protected float     $baseAssetVolume;
-    protected float     $quoteAssetVolume;
+    public \DateTime $time;
+    public string    $symbol;
+    public float     $closePrice;
+    public float     $openPrice;
+    public float     $highPrice;
+    public float     $lowPrice;
+    public float     $baseAssetVolume;
+    public float     $quoteAssetVolume;
 
     public function __construct(array $payload)
     {

@@ -4,12 +4,12 @@ namespace Binance\Event;
 
 class BookTicker
 {
-    protected int    $updateId;
-    protected string $symbol;
-    protected float  $bestBidPrice;
-    protected float  $bestBidQty;
-    protected float  $bestAskPrice;
-    protected float  $bestAskQty;
+    public int    $updateId;
+    public string $symbol;
+    public float  $bestBidPrice;
+    public float  $bestBidQty;
+    public float  $bestAskPrice;
+    public float  $bestAskQty;
 
     public function __construct(array $payload)
     {

@@ -6,23 +6,23 @@ use Binance\Event\Event;
 
 class Kline extends Event
 {
-    protected \DateTime $time;
-    protected \DateTime $startTime;
-    protected \DateTime $closeTime;
-    protected string $symbol;
-    protected string $interval;
-    protected int $firstTradeId;
-    protected int $lastTradeId;
-    protected float $open;
-    protected float $close;
-    protected float $high;
-    protected float $low;
-    protected float $volumeBase;
-    protected int $numberOfTrades;
-    protected bool $isClosed;
-    protected float $volumeQuote;
-    protected float $takerBuyBaseAssetVolume;
-    protected float $takerBuyQuoteAssetVolume;
+    public \DateTime $time;
+    public \DateTime $startTime;
+    public \DateTime $closeTime;
+    public string $symbol;
+    public string $interval;
+    public int $firstTradeId;
+    public int $lastTradeId;
+    public float $open;
+    public float $close;
+    public float $high;
+    public float $low;
+    public float $volumeBase;
+    public int $numberOfTrades;
+    public bool $isClosed;
+    public float $volumeQuote;
+    public float $takerBuyBaseAssetVolume;
+    public float $takerBuyQuoteAssetVolume;
 
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)

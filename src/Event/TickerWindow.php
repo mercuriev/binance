@@ -4,14 +4,14 @@ namespace Binance\Event;
 
 class TickerWindow extends MiniTicker
 {
-    protected float     $priceChange;
-    protected float     $priceChangePercent;
-    protected float     $weightedAvgPrice;
-    protected \DateTime $statisticsOpenTime;
-    protected \DateTime $statisticsCloseTime;
-    protected int       $firstTradeId;
-    protected int       $lastTradeId;
-    protected int       $totalNumberOfTrades;
+    public float     $priceChange;
+    public float     $priceChangePercent;
+    public float     $weightedAvgPrice;
+    public \DateTime $statisticsOpenTime;
+    public \DateTime $statisticsCloseTime;
+    public int       $firstTradeId;
+    public int       $lastTradeId;
+    public int       $totalNumberOfTrades;
 
     public function __construct(array $payload)
     {
