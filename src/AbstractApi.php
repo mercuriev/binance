@@ -38,7 +38,7 @@ abstract class AbstractApi
      * @param array $options
      * @return static
      */
-    static public function factory($sm, $name, array $options = []) : static
+    static public function factory($sm, $name) : static
     {
         $config = $sm->get('config');
         return new static($config[self::class] ?? []);
