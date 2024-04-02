@@ -32,6 +32,12 @@ class LimitOrder extends AbstractOrder
         return true;
     }
 
+    public function setPrice(float $price) : static
+    {
+        $this->price = $price;
+        return $this;
+    }
+
     public function isFilled() : bool
     {
         if (10 >= ($this->origQty - $this->executedQty) * $this->price) {
