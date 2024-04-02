@@ -2,60 +2,68 @@
 
 namespace Binance;
 
+use Binance\Entity\ExchangeInfo;
 use Binance\Exception\BinanceException;
 use Psr\Http\Message\ResponseInterface;
 
 class MarketDataApi extends AbstractApi
 {
-    protected function ping(): array
+    public function ping(): array
     {
         $req = self::buildRequest('GET', 'ping');
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getServerTime(): array
+    public function getExchangeInfo(): ExchangeInfo
+    {
+        $req = self::buildRequest('GET', 'exchangeInfo');
+        $res = $this->request($req, self::SEC_NONE);
+        return new ExchangeInfo($res);
+    }
+
+    public function getServerTime(): array
     {
         $req = self::buildRequest('GET', 'time');
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getOrderBook($params): array
+    public function getOrderBook($params): array
     {
         $req = self::buildRequest('GET', 'depth', $params);
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getAggTrades($params): array
+    public function getAggTrades($params): array
     {
         $req = self::buildRequest('GET', 'aggTrades', $params);
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getTwentyFourTickerPrice($params): array
+    public function getTwentyFourTickerPrice($params): array
     {
         $req = self::buildRequest('GET', 'ticker/24hr', $params);
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getTickers(): array
+    public function getTickers(): array
     {
         $req = self::buildRequest('GET', 'ticker/allPrices');
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getBookTickers(): array
+    public function getBookTickers(): array
     {
         $req = self::buildRequest('GET', 'ticker/allBookTickers');
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getPrice($params): array
+    public function getPrice($params): array
     {
         $req = self::buildRequest('GET', 'ticker/price', $params);
         return $this->request($req, self::SEC_NONE);
     }
 
-    protected function getKlines($params): array
+    public function getKlines($params): array
     {
         $req = self::buildRequest('GET', 'klines', $params);
         return $this->request($req, self::SEC_NONE);

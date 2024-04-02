@@ -2,6 +2,7 @@
 namespace Binance;
 
 use Binance\Account\MarginIsolatedAccount;
+use Binance\Entity\ExchangeInfo;
 use Binance\Exception\BinanceException;
 use Binance\Exception\ExceedBorrowable;
 use Binance\Exception\InsuficcientBalance;
@@ -239,5 +240,20 @@ class MarginIsolatedApi extends AbstractApi
             $post->quantity = truncate($post->quantity - $cancel->getExecutedQty(), 5);
         }
         return $this->post($post);
+    }
+
+    /**
+     * Get /exchangeInfo for this SYMBOL on MARGIN
+     *
+     * @return array
+     */
+    public function exchangeInfo() : ExchangeInfo
+    {
+        $req = self::buildRequest('GET', 'exchangeInfo', [
+            'symbol' => $this->symbol
+        ]);
+        $req->setUri(parent::API_URL . parent::API_PATH . 'exchangeInfo');
+        $res = $this->request($req, self::SEC_NONE);
+        return new ExchangeInfo($res);
     }
 }

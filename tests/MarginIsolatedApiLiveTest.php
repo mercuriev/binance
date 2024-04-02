@@ -3,6 +3,7 @@
 use Binance\AbstractApi;
 use Binance\AbstractPayload;
 use Binance\Account\MarginIsolatedAccount;
+use Binance\Entity\ExchangeInfo;
 use Binance\Exception\InsuficcientBalance;
 use Binance\MarginIsolatedApi;
 use Binance\Order\AbstractOrder;
@@ -33,6 +34,14 @@ class MarginIsolatedApiLiveTest extends TestCase
             'key'       => [$key, $secret],
             'symbol'    => self::SYMBOL
         ]);
+    }
+
+    public function testExchangeInfo()
+    {
+        $exchangeInfo = self::$api->exchangeInfo();
+        $this->assertInstanceOf(ExchangeInfo::class, $exchangeInfo);
+        $filter = $exchangeInfo->getFilter(self::SYMBOL, 'MAX_NUM_ALGO_ORDERS');
+        $this->assertIsArray($filter);
     }
 
     public function testAccount()

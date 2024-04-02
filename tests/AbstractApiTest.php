@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 
 class AbstractApiTest extends TestCase
 {
-
     public function testFactoryForServiceManager()
     {
         $sm = new class () {
