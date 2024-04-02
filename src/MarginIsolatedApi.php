@@ -6,6 +6,8 @@ use Binance\Entity\ExchangeInfo;
 use Binance\Exception\BinanceException;
 use Binance\Exception\ExceedBorrowable;
 use Binance\Exception\InsuficcientBalance;
+use Binance\Exception\InvalidPrices;
+use Binance\Exception\StopPriceTrigger;
 use Binance\Order\AbstractOrder;
 use Binance\Order\LimitOrder;
 use Binance\Order\MarketOrder;
@@ -171,10 +173,10 @@ class MarginIsolatedApi extends AbstractApi
                 throw new InsuficcientBalance($e->req, $e->res);
             }
             else if (str_starts_with($e->getMessage(), 'Stop price would trigger')) {
-                throw new \OutOfRangeException($e->req, $e->res);
+                throw new StopPriceTrigger($e->req, $e->res);
             }
             else if (str_starts_with($e->getMessage(), 'The relationship of the prices')) {
-                throw new \OutOfBoundsException($e->req, $e->res);
+                throw new InvalidPrices($e->req, $e->res);
             }
             else throw $e;
         }
