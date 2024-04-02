@@ -3,6 +3,7 @@ namespace Binance;
 
 use Binance\Account\MarginIsolatedAccount;
 use Binance\Exception\BinanceException;
+use Binance\Exception\ExceedBorrowable;
 use Binance\Exception\InsuficcientBalance;
 use Binance\Order\AbstractOrder;
 use Binance\Order\LimitOrder;
@@ -36,6 +37,7 @@ class MarginIsolatedApi extends AbstractApi
      * @param string $asset
      * @param float $amount
      * @return int              Transaction ID if successful.
+     * @throws ExceedBorrowable
      * @throws Exception\BinanceException
      */
     public function borrow(string $asset, float $amount) : int
@@ -47,7 +49,16 @@ class MarginIsolatedApi extends AbstractApi
         $params['amount']       = $amount;
         $params['type']         = 'BORROW';
         $req = static::buildRequest('POST', 'borrow-repay', $params);
-        return $this->request($req, self::SEC_MARGIN)['tranId'];
+
+        try {
+            return $this->request($req, self::SEC_MARGIN)['tranId'];
+        }
+        catch (BinanceException $e) {
+            if ($e->getCode() === -11008) {
+                throw new ExceedBorrowable($e->req, $e->res);
+            }
+            else throw $e;
+        }
     }
 
     /**
