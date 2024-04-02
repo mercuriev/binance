@@ -15,7 +15,6 @@ use Laminas\ServiceManager\ServiceManager;
 abstract class AbstractApi
 {
     const API_URL = 'https://api.binance.com/';
-    const API_VERSION = 'api/v1/';
     const API_PATH = 'api/v3/';
 
     const SEC_NONE          = 'NONE';           // neither key nor sign message
