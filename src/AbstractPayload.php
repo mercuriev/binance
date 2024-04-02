@@ -2,6 +2,7 @@
 
 namespace Binance;
 
+#[\AllowDynamicProperties]
 abstract class AbstractPayload
 {
     public function __construct(array $payload = [])
