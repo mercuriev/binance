@@ -78,7 +78,7 @@ class WebsocketsApi extends AbstractApi
         };
     }
 
-    public function receive() : bool|Event
+    public function receive() : null|bool|Event
     {
         return ($this)();
     }
