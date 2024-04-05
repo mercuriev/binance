@@ -68,16 +68,18 @@ abstract class AbstractOrder extends AbstractPayload
                 default     => $this->price
             }
         ];
-        if ('SELL' == $this->side) {
-            $tail = '%-8.5f -> %-8.2f';
-            $values[] = $this->getExecutedQty();
-            $values[] = $this->getExecutedAmount();
-        }
-        else {
-            $tail = '%-8.2f -> %-8.5f';
-            $values[] = $this->getExecutedAmount();
-            $values[] = $this->getExecutedQty();
-        }
+        if ($this->isFilled()) {
+            if ('SELL' == $this->side) {
+                $tail = ' : %-8.5f -> %-8.2f';
+                $values[] = $this->getExecutedQty();
+                $values[] = $this->getExecutedAmount();
+            }
+            else {
+                $tail = ' : %-8.2f -> %-8.5f';
+                $values[] = $this->getExecutedAmount();
+                $values[] = $this->getExecutedQty();
+            }
+        } else $tail = '';
 
         return vsprintf("%-4s %6s : %.2f : $tail", $values);
     }
