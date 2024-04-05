@@ -3,6 +3,7 @@
 namespace Binance\Order;
 
 use Binance\AbstractPayload;
+use Binance\Event\Trade;
 use function Binance\truncate;
 
 /**
@@ -11,7 +12,7 @@ use function Binance\truncate;
  * @property float $cummulativeQuoteQty
  */
 #[\AllowDynamicProperties]
-class AbstractOrder extends AbstractPayload
+abstract class AbstractOrder extends AbstractPayload
 {
     public string $symbol = 'BTCFDUSD';
     public string $side;
@@ -33,6 +34,22 @@ class AbstractOrder extends AbstractPayload
                 default => throw new \InvalidArgumentException("Unknown type: {$reply['type']}")
             };
         }
+    }
+
+    public function match(Trade $trade) : null|self
+    {
+        if (('SELL' == $this->side && $trade->sellerOrderId == $this->orderId)
+         || ('BUY'  == $this->side && $trade->buyerOrderId  == $this->orderId))
+        {
+            $this->executedQty = bcadd($this->executedQty, $trade->quantity, 5);
+            $this->cummulativeQuoteQty = truncate(
+                bcadd($this->cummulativeQuoteQty, bcmul($trade->price, $trade->quantity, 8), 8)
+            , 5);
+            $this->status = $this->executedQty >= $this->origQty ? 'FILLED' : 'FILLED_PARTIALLY';
+            return $this;
+        }
+
+        return null;
     }
 
     public function oneline() : string

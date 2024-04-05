@@ -23,6 +23,16 @@ class OcoOrder extends AbstractOrder
     public float $stopLimitPrice = 0;
     public string $stopLimitTimeInForce = 'GTC';
 
+    public function match(Trade $trade) : null|AbstractOrder
+    {
+        foreach ($this->orderReports as $o) {
+            if ($match = $o->match($trade)) {
+                return $match;
+            }
+        }
+        return null;
+    }
+
     public function getDealId(): string
     {
         $parts = explode('-', $this->listClientOrderId);
