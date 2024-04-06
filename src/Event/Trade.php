@@ -8,7 +8,7 @@ class Trade extends Event
     public string    $symbol;
     public int       $id;
     public float     $price;
-    public float     $quantity;
+    public string    $quantity;         // string to prevent exponential float that is not accepted by bcmath
     public int       $buyerOrderId;
     public int       $sellerOrderId;
     public \DateTime $tradeTime;
@@ -21,7 +21,7 @@ class Trade extends Event
         $this->symbol         = $payload['s'];
         $this->id             = $payload['t'];
         $this->price          = floatval($payload['p']);
-        $this->quantity       = floatval($payload['q']);
+        $this->quantity       = $payload['q'];
         $this->buyerOrderId   = $payload['b'];
         $this->sellerOrderId  = $payload['a'];
         $this->tradeTime      = new \DateTime("@".intval($payload['T']/1000));
