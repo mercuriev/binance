@@ -39,15 +39,6 @@ class LimitOrder extends AbstractOrder
         return $this;
     }
 
-    public function isFilled() : bool
-    {
-        if (10 >= ($this->origQty - $this->executedQty) * $this->price) {
-            $this->status = 'FILLED';
-            return true;
-        }
-        return parent::isFilled();
-    }
-
     public function convertToMarket() : MarketOrder
     {
         $market = new MarketOrder();
