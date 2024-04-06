@@ -14,6 +14,7 @@ use function Binance\truncate;
  * @property int $executedQty
  * @property int $cummulativeQuoteQty
  * @property float $quoteOrderQty
+ * @property string $newOrderRespType
  */
 class LimitOrder extends AbstractOrder
 {
