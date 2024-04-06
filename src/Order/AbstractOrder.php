@@ -41,6 +41,7 @@ abstract class AbstractOrder extends AbstractPayload
         if (('SELL' == $this->side && $trade->sellerOrderId == $this->orderId)
          || ('BUY'  == $this->side && $trade->buyerOrderId  == $this->orderId))
         {
+            if (!isset($this->executedQty)) $this->executedQty = 0;
             $this->executedQty = bcadd($this->executedQty, $trade->quantity, 5);
             $this->cummulativeQuoteQty = truncate(
                 bcadd($this->cummulativeQuoteQty, bcmul($trade->price, $trade->quantity, 8), 8)
