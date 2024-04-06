@@ -2,7 +2,9 @@
 
 namespace Binance\Account;
 
-class Asset
+use Binance\AbstractPayload;
+
+class Asset extends AbstractPayload
 {
     public string $asset;
     public bool   $borrowEnabled;
@@ -14,11 +16,4 @@ class Asset
     public float  $netAssetOfBtc;
     public bool   $repayEnabled;
     public float  $totalAsset;
-
-    public function __construct(array $data = array())
-    {
-        foreach ($data as $k => $v) {
-            $this->$k = $v;
-        }
-    }
 }
