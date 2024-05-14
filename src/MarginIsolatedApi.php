@@ -108,7 +108,7 @@ class MarginIsolatedApi extends AbstractApi
         $params = $symbol ? ['symbols' => join(',', $symbol)] : [];
         $req = static::buildRequest('GET', 'isolated/account', $params);
         $res = $this->request($req, self::SEC_MARGIN);
-        if ($res) {
+        if ($res['assets']) {
             return new MarginIsolatedAccount($res['assets'][0]);
         } else {
             // empty response is only possible if filtered by non-existing symbol
