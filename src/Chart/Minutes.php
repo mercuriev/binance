@@ -1,8 +1,7 @@
 <?php
 namespace Binance\Chart;
 
-use Binance\Binance;
-use Binance\Trade;
+use Binance\Event\Trade;
 use Laminas\ServiceManager\ServiceManager;
 
 final class Minutes extends AbstractChart
@@ -44,21 +43,21 @@ final class Minutes extends AbstractChart
     /**
      * Minutes klines hold only open/close prices.
      */
-    public function append(mixed $trade)
+    public function append(mixed $value): void
     {
-        if (!$trade instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
+        if (!$value instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
         if (array_key_last($this->storage) >= self::SIZE) array_pop($this->storage);
         if (array_key_last($this->trader) >= self::SIZE) array_shift($this->trader);
 
 
-        if ($this->isNew($trade)) {
-            array_unshift($this->storage, new Kline([$trade]));
+        if ($this->isNew($value)) {
+            array_unshift($this->storage, new Kline([$value]));
         }
         else {
-            $this[0][1] = $trade;
+            $this[0][1] = $value;
             if ($this->trader) array_pop($this->trader);
         }
-        $this->trader[] = (float) $trade['p'];
+        $this->trader[] = (float) $value['p'];
     }
 
     /**

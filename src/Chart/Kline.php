@@ -1,8 +1,9 @@
 <?php
 namespace Binance\Chart;
 
-use Binance\Trade;
+use Binance\Event\Trade;
 use Laminas\Stdlib\ArrayObject;
+use function Binance\json_encode_pretty;
 
 /**
  * Holds trades for CURRENT SECOND.

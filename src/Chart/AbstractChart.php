@@ -9,10 +9,11 @@ use Binance\Chart\Indicator\MACD;
 use Binance\Chart\Indicator\RSI;
 use Binance\Event\Trade;
 use Laminas\Stdlib\ArrayObject;
+use function Binance\json_encode_pretty;
 
 
 /**
- * Laminas array object is used so that class can array_shift() $storage
+ * Laminas array object is used so that this object can array_shift() $storage
  * which is private in SPL. (SPL->exchangeArray() is very slow.)
  */
 abstract class AbstractChart extends ArrayObject
@@ -27,7 +28,7 @@ abstract class AbstractChart extends ArrayObject
      */
     abstract public function isNew(Trade $trade) : bool;
 
-    public function __construct ($input = null, $flags = null, $iterator_class = null)
+    public function __construct ($input = null)
     {
         parent::__construct([], self::STD_PROP_LIST, 'ArrayIterator');
         if (null !== $input) {
@@ -42,22 +43,26 @@ abstract class AbstractChart extends ArrayObject
         return json_encode_pretty($this->storage);
     }
 
-    public function append(mixed $trade)
+    /**
+     * @param Trade $value
+     * @return void
+     */
+    public function append(mixed $value): void
     {
-        if (!$trade instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
+        if (!$value instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
         if (array_key_last($this->storage) >= self::SIZE) array_pop($this->storage);
         if (array_key_last($this->trader) >= self::SIZE) array_shift($this->trader);
 
-        if ($this->isNew($trade)) {
+        if ($this->isNew($value)) {
             array_unshift($this->storage, new Kline([]));
         } else {
             array_pop($this->trader);
         }
-        $this[0]->append($trade);
-        $this->trader[] = (float) $trade['p'];
+        $this[0]->append($value);
+        $this->trader[] = (float)$value['p'];
     }
 
-    public function isReady()
+    public function isReady(): bool
     {
         return isset($this[self::SIZE - 1]);
     }

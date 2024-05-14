@@ -17,3 +17,8 @@ function truncate(float|string $input, $decimals = 2) : float
         }
     }
 }
+
+function json_encode_pretty(mixed $data)
+{
+    return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+}
