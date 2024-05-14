@@ -100,7 +100,7 @@ class MarginIsolatedApi extends AbstractApi
      * @param array|string|null $symbol Select up to 5 symbols or all if null
      *
      * @return MarginIsolatedAccount
-     * @throws BinanceException
+     * @throws BinanceException|\InvalidArgumentException
      */
     public function getAccount(null|array|string $symbol = null) : MarginIsolatedAccount
     {
@@ -108,7 +108,12 @@ class MarginIsolatedApi extends AbstractApi
         $params = $symbol ? ['symbols' => join(',', $symbol)] : [];
         $req = static::buildRequest('GET', 'isolated/account', $params);
         $res = $this->request($req, self::SEC_MARGIN);
-        return new MarginIsolatedAccount($res['assets'][0]);
+        if ($res) {
+            return new MarginIsolatedAccount($res['assets'][0]);
+        } else {
+            // empty response is only possible if filtered by non-existing symbol
+            throw new \InvalidArgumentException('No such symbol ' . $params['symbols']);
+        }
     }
 
     /**
