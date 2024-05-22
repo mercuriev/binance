@@ -164,7 +164,7 @@ class MarginIsolatedApi extends AbstractApi
         return $order;
     }
 
-    public function post(LimitOrder|OcoOrder|StopOrder|MarketOrder $order) : LimitOrder|OcoOrder|StopOrder|MarketOrder
+    public function post(AbstractOrder $order) : AbstractOrder
     {
         $endpoint = $order instanceof OcoOrder ? 'order/oco' : 'order';
         $params = (array) $order;
@@ -188,7 +188,7 @@ class MarginIsolatedApi extends AbstractApi
         }
     }
 
-    public function cancel(int|LimitOrder|OcoOrder|StopOrder $order): LimitOrder|OcoOrder|StopOrder
+    public function cancel(int|AbstractOrder $order): AbstractOrder
     {
         if (is_int($order)) {
             $order = new LimitOrder(['orderId' => $order]);
@@ -216,7 +216,6 @@ class MarginIsolatedApi extends AbstractApi
      * Prefix is used to cancel only orders placed by this software and let alone human orders from UI.
      *
      * @param string $clientIdPrefix
-     * @param string $symbol
      * @return int
      * @throws BinanceException
      */
@@ -227,7 +226,6 @@ class MarginIsolatedApi extends AbstractApi
         $done = 0;
         foreach($res as $order) {
             if (str_starts_with($order->getClientOrderId(), $clientIdPrefix)) {
-                /** @noinspection PhpParamsInspection */
                 $this->cancel($order);
                 $done++;
             }
@@ -235,7 +233,7 @@ class MarginIsolatedApi extends AbstractApi
         return $done;
     }
 
-    public function replace(LimitOrder|StopOrder|OcoOrder $cancel, LimitOrder|OcoOrder|StopOrder|MarketOrder $post) : AbstractOrder
+    public function replace(AbstractOrder $cancel, AbstractOrder $post) : AbstractOrder
     {
         if ($cancel->isFilled())        return $cancel;
         elseif (!$cancel->isCanceled()) $this->cancel($cancel);
