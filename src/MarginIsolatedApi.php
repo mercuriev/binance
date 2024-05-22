@@ -88,6 +88,7 @@ class MarginIsolatedApi extends AbstractApi
 
         $params = ['asset' => $asset];
         if ($this->isolated) {
+            if (empty($this->symbol)) throw new \RuntimeException('Symbol was not set.');
             $params['isolatedSymbol'] = $this->symbol;
         }
         $req = static::buildRequest('GET', 'maxBorrowable', $params);
