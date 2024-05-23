@@ -3,10 +3,11 @@
 namespace Binance\Event;
 
 #[\AllowDynamicProperties]
-class Event
+class Event extends \ArrayObject
 {
     public function __construct(array $payload = [])
     {
+        parent::__construct($payload);
         foreach ($payload as $k => $v) $this->$k = $v;
     }
 
