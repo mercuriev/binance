@@ -22,7 +22,6 @@ class OcoOrder extends AbstractOrder
     public float $stopPrice = 0;
     public float $stopLimitPrice = 0;
     public string $stopLimitTimeInForce = 'GTC';
-    public string $newOrderRespType = 'FULL';
 
     public function match(Trade $trade) : null|AbstractOrder
     {
