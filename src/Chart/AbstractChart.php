@@ -141,7 +141,7 @@ abstract class AbstractChart extends ArrayObject
     {
         /** @noinspection PhpUndefinedFunctionInspection, PhpUndefinedConstantInspection */
         $res = trader_ma($this->trader, $period, TRADER_MA_TYPE_SMA);
-        if (!$res) throw new \RuntimeException('Failed to find MA.');
+        if (!$res) throw new \UnderflowException('Failed to find MA.');
 
         $res = array_reverse($res);
         return new MA($res);
@@ -151,7 +151,7 @@ abstract class AbstractChart extends ArrayObject
     {
         /** @noinspection PhpUndefinedFunctionInspection, PhpUndefinedConstantInspection */
         $res = trader_ma($this->trader, $period, TRADER_MA_TYPE_EMA);
-        if (!$res) throw new \RuntimeException('Failed to find EMA.');
+        if (!$res) throw new \UnderflowException('Failed to find EMA.');
 
         $res = array_reverse($res);
         return new EMA($res);
@@ -164,7 +164,7 @@ abstract class AbstractChart extends ArrayObject
     {
         /** @noinspection PhpUndefinedFunctionInspection, PhpUndefinedConstantInspection */
         $res = trader_macd($this->trader, $fast, $slow, $signal);
-        if (!$res) throw new \RuntimeException('Failed to find MACD.');
+        if (!$res) throw new \UnderflowException('Failed to find MACD.');
 
         // reset keys
         $fast = array_reverse($res[0]);
@@ -187,7 +187,7 @@ abstract class AbstractChart extends ArrayObject
     {
         /** @noinspection PhpUndefinedFunctionInspection, PhpUndefinedConstantInspection */
         $res = trader_rsi($this->trader, $period);
-        if (!$res) throw new \RuntimeException('Failed to find RSI.');
+        if (!$res) throw new \UnderflowException('Failed to find RSI.');
 
         $res = array_reverse($res);
         return new RSI($res);
@@ -197,7 +197,7 @@ abstract class AbstractChart extends ArrayObject
     {
         /** @noinspection PhpUndefinedFunctionInspection, PhpUndefinedConstantInspection */
         $res = trader_bbands($this->trader, $period, $multiplier, $multiplier);
-        if (!$res) throw new \RuntimeException('Failed to find BOLL.');
+        if (!$res) throw new \UnderflowException('Failed to find BOLL.');
 
         // reset keys
         $up = array_reverse($res[0]);
