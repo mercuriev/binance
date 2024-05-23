@@ -17,14 +17,14 @@ class Trade extends Event
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
     {
-        $this->time           = new \DateTime("@".intval($payload['E']/1000));
-        $this->symbol         = $payload['s'];
-        $this->id             = $payload['t'];
-        $this->price          = floatval($payload['p']);
-        $this->quantity       = $payload['q'];
-        $this->buyerOrderId   = $payload['b'];
-        $this->sellerOrderId  = $payload['a'];
-        $this->tradeTime      = new \DateTime("@".intval($payload['T']/1000));
-        $this->buyerIsMaker   = $payload['m'];
+        if (isset($payload['E'])) $this->time           = new \DateTime("@" . intval($payload['E'] / 1000));
+        if (isset($payload['s'])) $this->symbol         = $payload['s'];
+        if (isset($payload['t'])) $this->id             = $payload['t'];
+        if (isset($payload['p'])) $this->price          = floatval($payload['p']);
+        if (isset($payload['q'])) $this->quantity       = $payload['q'];
+        if (isset($payload['b'])) $this->buyerOrderId   = $payload['b'];
+        if (isset($payload['a'])) $this->sellerOrderId  = $payload['a'];
+        if (isset($payload['T'])) $this->tradeTime      = new \DateTime("@" . intval($payload['T'] / 1000));
+        if (isset($payload['m'])) $this->buyerIsMaker   = $payload['m'];
     }
 }
