@@ -2,8 +2,6 @@
 
 namespace Binance\Event;
 
-use Binance\Event\Event;
-
 class Ticker extends MiniTicker
 {
     public float     $priceChange;

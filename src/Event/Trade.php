@@ -17,6 +17,7 @@ class Trade extends Event
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
     {
+        parent::__construct($payload);
         if (isset($payload['E'])) $this->time           = new \DateTime("@" . intval($payload['E'] / 1000));
         if (isset($payload['s'])) $this->symbol         = $payload['s'];
         if (isset($payload['t'])) $this->id             = $payload['t'];

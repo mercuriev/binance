@@ -13,6 +13,7 @@ class Depth extends Event
 
     public function __construct(array $payload)
     {
+        parent::__construct($payload);
         $this->time = new \DateTime("@".intval($payload['E']/1000));
         $this->symbol = $payload['s'];
         $this->firstUpdateId = intval($payload['U']);
