@@ -5,6 +5,11 @@ use Laminas\Stdlib\ArrayObject;
 
 class AbstractIndicator extends ArrayObject
 {
+    public function __toString(): string
+    {
+        return $this->now();
+    }
+
     public function now()
     {
         return $this[0];
