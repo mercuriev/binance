@@ -1,7 +1,7 @@
 <?php
 namespace Binance\Chart;
 
-use Binance\Trade;
+use Binance\Event\Trade;
 use Laminas\ServiceManager\ServiceManager;
 use X\Db\Adapter;
 use X\Log\Logger;
