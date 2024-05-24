@@ -82,6 +82,15 @@ class MarginIsolatedApi extends AbstractApi
         return $this->request($req, self::SEC_MARGIN)['tranId'];
     }
 
+
+    /**
+     * Computes the maximum amount that can be borrowed for a specific asset.
+     *
+     * @param string $asset The asset for which to compute the maximum borrowable amount.
+     * @return float The maximum amount that can be borrowed for the specified asset.
+     * @throws \InvalidArgumentException If asset is not provided or if the symbol is not set and the account is isolated.
+     * @throws BinanceException
+     */
     public function maxBorrowable(string $asset) : float
     {
         if (empty($asset)) throw new \InvalidArgumentException('Asset must be a token.');
