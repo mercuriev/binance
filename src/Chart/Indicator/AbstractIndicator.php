@@ -26,19 +26,19 @@ class AbstractIndicator extends ArrayObject
         $period = array_slice($this->storage, 0, $period + 1);
 
         $up = $down = 0;
-        foreach ($period as $k => $price) {
+        foreach ($period as $k => $now) {
             if (isset($period[$k+1])) {
                 $last = $period[$k+1];
             } else break;
 
-            if ($price > $last) $up++;
+            if ($now > $last) $up++;
             else $down++;
         }
 
-        return $ratio >= round($up / ($up + $down), 2);
+        return $up / ($up + $down) >= $ratio;
     }
 
-    public function isDescending(int $period, float $ratio = 0.75) : bool
+    public function isDescending(int $period, float $ratio = 1) : bool
     {
         return !$this->isAscending($period, $ratio);
     }
