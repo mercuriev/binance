@@ -1,5 +1,5 @@
 {
-  "name": "web3promax/binance",
+  "name": "mercuriev/binance",
   "version": "1.0.0",
   "description": "A PHP wrapper for the Binance API endpoints.",
   "keywords": ["binance", "cryptocurrency", "php", "api", "wrapper-api", "php-library", "cryptocurrency-exchanges"],
