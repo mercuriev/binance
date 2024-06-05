@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A PHP wrapper for the Binance API endpoints.",
   "keywords": ["binance", "cryptocurrency", "php", "api", "wrapper-api", "php-library", "cryptocurrency-exchanges"],
-  "homepage": "https://github.com/web3promax/php-binance",
   "license": "MIT",
   "require": {
     "php": ">=8.2",
