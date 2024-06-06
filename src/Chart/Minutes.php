@@ -59,16 +59,4 @@ final class Minutes extends AbstractChart
         }
         $this->trader[] = (float) $value['p'];
     }
-
-    /**
-     * Fill storage with API candlestick data response
-     */
-    public function withKlines(array $klines) : self
-    {
-        foreach($klines as $v) {
-            $this->append(new Trade(['p' => $v[1], 'T' => $v[0]])); // open trade
-            $this->append(new Trade(['p' => $v[4], 'T' => $v[6]])); // close trade
-        }
-        return $this;
-    }
 }

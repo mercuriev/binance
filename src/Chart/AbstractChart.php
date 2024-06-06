@@ -109,6 +109,18 @@ abstract class AbstractChart extends ArrayObject
         return true;
     }
 
+    /**
+     * Fill storage with API candlestick data response
+     */
+    public function withKlines(array $klines) : self
+    {
+        foreach($klines as $v) {
+            $this->append(new Trade(['p' => $v[1], 'T' => $v[0]])); // open trade
+            $this->append(new Trade(['p' => $v[4], 'T' => $v[6]])); // close trade
+        }
+        return $this;
+    }
+
     public function getUpRatio(int $period = self::SIZE) : float
     {
         $up = $down = 0;
