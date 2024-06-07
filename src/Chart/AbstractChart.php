@@ -89,21 +89,23 @@ abstract class AbstractChart extends ArrayObject
         return max($period);
     }
 
-    public function isBelow(AbstractIndicator $ind, int $period) : bool
+    public function isBelow(AbstractIndicator|float $ind, int $period) : bool
     {
         $key = 0;
         while ($key < $period) {
-            if ($this[$key]->high() > $ind[$key]) return false;
+            $level = is_float($ind) ? $ind : $ind[$key];
+            if ($this[$key]->high() > $level) return false;
             $key++;
         }
         return true;
     }
 
-    public function isAbove(AbstractIndicator $ind, int $period) : bool
+    public function isAbove(AbstractIndicator|float $ind, int $period) : bool
     {
         $key = 0;
         while ($key < $period) {
-            if ($this[$key]->low() < $ind[$key]) return false;
+            $level = is_float($ind) ? $ind : $ind[$key];
+            if ($this[$key]->low() < $level) return false;
             $key++;
         }
         return true;
