@@ -56,7 +56,7 @@ abstract class AbstractApi
         );
     }
 
-    static protected function buildRequest(
+    static public function buildRequest(
         string $method,
         string $endpoint,
         array  $params = []
