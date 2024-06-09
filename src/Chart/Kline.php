@@ -18,30 +18,30 @@ class Kline extends ArrayObject
     public function high() : float
     {
         $prices = [];
-        foreach ($this as $trade) $prices[] = $trade['p'];
+        foreach ($this as $trade) $prices[] = $trade->price;
         return max($prices);
     }
 
     public function low() : float
     {
         $prices = [];
-        foreach ($this as $trade) $prices[] = $trade['p'];
+        foreach ($this as $trade) $prices[] = $trade->price;
         return min($prices);
     }
 
     public function getPrice() : float
     {
-        return $this->last()->getPrice();
+        return $this->last()->price;
     }
 
     public function getOpen() : float
     {
-        return $this[0]->getPrice();
+        return $this[0]->price;
     }
 
     public function getClose() : float
     {
-        return $this->last()->getPrice();
+        return $this->last()->price;
     }
 
     public function isGreen() : bool
