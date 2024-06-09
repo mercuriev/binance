@@ -16,17 +16,17 @@ class SpotApi extends AbstractApi
     /**
      * Returns current account information.
      *
-     * @param array $params The data to send.
-     *      @option int "timestamp"  A UNIX timestamp. (required)
-     *      @option int "recvWindow" The number of milliseconds after timestamp the request is valid for.
-     *
-     * @return ResponseInterface
-     *
-     * @link https://www.binance.com/restapipub.html#account-information-signed
+     * @param array|null $params The data to send.
+     * @return Account
+     * @throws BinanceException
+     * @link https://binance-docs.github.io/apidocs/spot/en/#account-information-user_data
      */
     public function getAccount(array $params = null) : Account
     {
-        $params = $params ?? ['timestamp' => time() * 1000];
+        $params = array_merge([
+            'omitZeroBalances' => 'true',
+            'timestamp' => time() * 1000
+        ], $params ?? []);
         $req = self::buildRequest('GET', 'account', $params);
         $res = $this->request($req, self::SEC_SIGNED);
         return new Account($res);
