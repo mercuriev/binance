@@ -14,18 +14,12 @@ use Binance\Order\MarketOrder;
 use Binance\Order\OcoOrder;
 use Binance\Order\StopOrder;
 
-class MarginIsolatedApi extends AbstractApi
+class MarginIsolatedApi extends SpotApi
 {
-    const API_PATH = 'sapi/v1/margin/';
-
-    const API_VERSION = 'sapi/v1/';
+    const string API_PATH = 'sapi/v1/margin/';
+    const string API_VERSION = 'sapi/v1/';
 
     public bool $isolated = true;
-
-    /**
-     * @var string Mandatory to set before usage.
-     */
-    public string $symbol;
 
     /**
      * @param array $config
@@ -219,27 +213,6 @@ class MarginIsolatedApi extends AbstractApi
         $reply = $this->request($req, self::SEC_TRADE);
         $order->merge($reply);
         return $order;
-    }
-
-    /**
-     * Prefix is used to cancel only orders placed by this software and let alone human orders from UI.
-     *
-     * @param string $clientIdPrefix
-     * @return int
-     * @throws BinanceException
-     */
-    public function cancelAll(string $clientIdPrefix = '') : int
-    {
-        $res = $this->getOpenOrders();
-
-        $done = 0;
-        foreach($res as $order) {
-            if (str_starts_with($order->getClientOrderId(), $clientIdPrefix)) {
-                $this->cancel($order);
-                $done++;
-            }
-        }
-        return $done;
     }
 
     public function replace(AbstractOrder $cancel, AbstractOrder $post) : AbstractOrder
