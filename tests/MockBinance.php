@@ -1,4 +1,5 @@
 <?php
+namespace Binance;
 
 use Binance\AbstractApi;
 use Binance\Exception\InsuficcientBalance;
