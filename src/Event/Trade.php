@@ -1,12 +1,11 @@
 <?php
-
 namespace Binance\Event;
 
 class Trade extends Event
 {
+    public int       $id;
     public \DateTime $time;
     public string    $symbol;
-    public int       $id;
     public float     $price;
     public string    $quantity;         // string to prevent exponential float that is not accepted by bcmath
     public int       $buyerOrderId;
@@ -14,7 +13,6 @@ class Trade extends Event
     public \DateTime $tradeTime;
     public bool      $buyerIsMaker;
 
-    /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
     {
         parent::__construct($payload);
