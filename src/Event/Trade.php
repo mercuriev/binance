@@ -26,4 +26,16 @@ class Trade extends Event
         if (isset($payload['T'])) $this->tradeTime      = new \DateTime("@" . intval($payload['T'] / 1000));
         if (isset($payload['m'])) $this->buyerIsMaker   = $payload['m'];
     }
+
+    static public function fromHistorical(array $payload) : static
+    {
+        // no order id in response
+        $trade = new static([]);
+        $trade->id = $payload['id'];
+        $trade->price = $payload['price'];
+        $trade->quantity = $payload['qty'];
+        $trade->time = $trade->tradeTime = new \DateTime("@" . intval($payload['time'] / 1000));
+        $trade->buyerIsMaker = $payload['isBuyerMaker'];
+        return $trade;
+    }
 }
