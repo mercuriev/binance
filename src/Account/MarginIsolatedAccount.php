@@ -5,14 +5,10 @@ use function Binance\truncate;
 
 /**
  * @property string $symbol
- * @property array $baseAsset
- * @property array $quoteAsset
  * @property float $indexPrice
  */
 class MarginIsolatedAccount extends Account
 {
-    public Asset  $baseAsset;
-    public Asset  $quoteAsset;
     public string $symbol;
     public bool   $isolatedCreated;
     public bool   $enabled;

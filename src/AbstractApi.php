@@ -6,6 +6,8 @@ use Binance\Exception\BinanceException;
 use Laminas\Http\Client;
 use Laminas\Http\Request;
 use Laminas\ServiceManager\ServiceManager;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * APIs are grouped similar to documentation.
@@ -32,12 +34,12 @@ abstract class AbstractApi
     private int $recvWidnow;
 
     /**
-     * @param ServiceManager $sm    Typehint is omitted to allow unit tests to run the method.
-     * @param $name
-     * @param array $options
+     * @param ServiceManager $sm Typehint is omitted to allow unit tests to run the method.
      * @return static
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    static public function factory($sm, $name) : static
+    static public function factory($sm) : static
     {
         $config = $sm->get('config');
         return new static($config[self::class] ?? []);
@@ -108,6 +110,8 @@ abstract class AbstractApi
         if ($res->getStatusCode() >= 200 && $res->getStatusCode() <= 299) {
             return json_decode($res->getBody(), true);
         }
-        else throw new BinanceException($req, $res);
+        else {
+            throw new BinanceException($req, $res);
+        }
     }
 }

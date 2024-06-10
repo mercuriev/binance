@@ -19,7 +19,6 @@ abstract class AbstractOrder extends AbstractPayload
     public int $timestamp;
 
     public int $recvWindow;
-    public string $isIsolated = 'TRUE';
     public string $newOrderRespType = 'FULL';
 
     public static function fromApi(array $reply) : static

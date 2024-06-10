@@ -1,22 +1,26 @@
 <?php
 
-use Binance\AbstractApi;
-use Binance\AbstractPayload;
 use Binance\Account\MarginIsolatedAccount;
 use Binance\Entity\ExchangeInfo;
 use Binance\Exception\InsuficcientBalance;
 use Binance\MarginIsolatedApi;
 use Binance\Order\AbstractOrder;
+use Binance\Order\LimitMakerOrder;
 use Binance\Order\LimitOrder;
 use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use function Binance\truncate;
 
+/**
+ * Initial conditions:
+ *   - BTCFDUSD
+ *   - any asset for collateral
+ */
 class MarginIsolatedApiLiveTest extends TestCase
 {
     protected static MarginIsolatedApi $api;
 
-    const SYMBOL = 'BTCFDUSD';
+    const string SYMBOL = 'BTCFDUSD';
 
     static private AbstractOrder $order;
     private static MarginIsolatedAccount $account;
@@ -81,7 +85,7 @@ class MarginIsolatedApiLiveTest extends TestCase
     #[Depends('testBorrow')]
     public function testPostLimit()
     {
-        $order = new LimitOrder();
+        $order = new LimitMakerOrder();
         $order->symbol = 'BTCFDUSD';
         $order->price = 40000;
         $order->side = 'BUY';
@@ -120,7 +124,8 @@ class MarginIsolatedApiLiveTest extends TestCase
     #[Depends('testCancelAll')]
     public function testRepay()
     {
-        $repay = self::$api->repay('FDUSD', 10);
+        self::$account = self::$api->getAccount(self::SYMBOL);
+        $repay = self::$api->repay(self::$account->quoteAsset->asset, self::$account->quoteAsset->borrowed);
         $this->assertGreaterThan(0, $repay);
     }
 }

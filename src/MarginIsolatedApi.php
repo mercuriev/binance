@@ -22,15 +22,6 @@ class MarginIsolatedApi extends SpotApi
     public bool $isolated = true;
 
     /**
-     * @param array $config
-     */
-    public function __construct(array $config)
-    {
-        parent::__construct($config);
-        $this->symbol = $config['symbol'] ?? '';
-    }
-
-    /**
      * @param string $asset
      * @param float $amount
      * @return int              Transaction ID if successful.
@@ -66,6 +57,10 @@ class MarginIsolatedApi extends SpotApi
      */
     public function repay(string $asset, float $amount) : int
     {
+        if (0 == $amount) {
+            throw new \InvalidArgumentException('Amount must be greater than 0.');
+        }
+
         $params = [];
         $params['symbol']       = $this->symbol;
         $params['isIsolated']   = $this->isolated ? 'TRUE' : 'FALSE';
@@ -137,58 +132,47 @@ class MarginIsolatedApi extends SpotApi
         return $res;
     }
 
-    /**
-     * @return LimitOrder|MarketOrder|OcoOrder|StopOrder
-     */
-    public function get(array|AbstractOrder $order): AbstractOrder
+    public function replace(AbstractOrder $cancel, AbstractOrder $post) : AbstractOrder
     {
-        if ($order instanceof OcoOrder) {
-            $endpoint = 'orderList';
-            $params = ['symbol' => $order->symbol, 'orderListId' => $order->orderListId];
-        }
-        else {
-            $endpoint = 'order';
-            if (!is_array($order)) {
-                $params = ['symbol' => $order->symbol,'orderId' => $order->orderId];
-            } else $params = $order;
-        }
-        $req = self::buildRequest('GET', $endpoint, $params);
-        $reply = $this->request($req, self::SEC_USER_DATA);
+        if ($cancel->isFilled())        return $cancel;
+        elseif (!$cancel->isCanceled()) $this->cancel($cancel);
 
-        is_array($order) ? $order = AbstractOrder::fromApi($reply) : $order->merge($reply);
-
-        if ($order instanceof OcoOrder) {
-            $order->orderReports = [];
-            foreach ($order->orders as $o) {
-                $order->orderReports[] = $this->get(['symbol' => $order->symbol, 'orderId' => $o['orderId']]);
-            }
+        if ($cancel->isFilled()) {
+            return $cancel;
         }
 
-        return $order;
+        if ($cancel->isPartiallyFilled()) {
+            $post->quantity = truncate($post->quantity - $cancel->getExecutedQty(), 5);
+        }
+        return $this->post($post);
     }
 
-    public function post(AbstractOrder $order) : AbstractOrder
+    /**
+     * Get /exchangeInfo for this SYMBOL on MARGIN
+     *
+     * @return ExchangeInfo
+     * @throws BinanceException
+     */
+    public function exchangeInfo() : ExchangeInfo
     {
-        $endpoint = $order instanceof OcoOrder ? 'order/oco' : 'order';
-        $params = (array) $order;
-        try {
-            $req = static::buildRequest('POST', $endpoint, $params);
-            $res = $this->request($req, static::SEC_TRADE);
-            $order->merge($res);
-            return $order;
-        }
-        catch (BinanceException $e) {
-            if (str_starts_with($e->getMessage(), 'Account has insufficient balance')) {
-                throw new InsuficcientBalance($e->req, $e->res);
-            }
-            else if (str_starts_with($e->getMessage(), 'Stop price would trigger')) {
-                throw new StopPriceTrigger($e->req, $e->res);
-            }
-            else if (str_starts_with($e->getMessage(), 'The relationship of the prices')) {
-                throw new InvalidPrices($e->req, $e->res);
-            }
-            else throw $e;
-        }
+        $req = self::buildRequest('GET', 'exchangeInfo', [
+            'symbol' => $this->symbol
+        ]);
+        $req->setUri(parent::API_URL . parent::API_PATH . 'exchangeInfo');
+        $res = $this->request($req, self::SEC_NONE);
+        return new ExchangeInfo($res);
+    }
+
+    public function get(array|AbstractOrder $order): AbstractOrder
+    {
+        $order->isIsolated = $this->isolated ? 'TRUE' : 'FALSE';
+        return parent::get($order);
+    }
+
+    public function post(AbstractOrder $order): AbstractOrder
+    {
+        $order->isIsolated = $this->isolated ? 'TRUE' : 'FALSE';
+        return parent::post($order);
     }
 
     public function cancel(int|AbstractOrder $order): AbstractOrder
@@ -213,35 +197,5 @@ class MarginIsolatedApi extends SpotApi
         $reply = $this->request($req, self::SEC_TRADE);
         $order->merge($reply);
         return $order;
-    }
-
-    public function replace(AbstractOrder $cancel, AbstractOrder $post) : AbstractOrder
-    {
-        if ($cancel->isFilled())        return $cancel;
-        elseif (!$cancel->isCanceled()) $this->cancel($cancel);
-
-        if ($cancel->isFilled()) {
-            return $cancel;
-        }
-
-        if ($cancel->isPartiallyFilled()) {
-            $post->quantity = truncate($post->quantity - $cancel->getExecutedQty(), 5);
-        }
-        return $this->post($post);
-    }
-
-    /**
-     * Get /exchangeInfo for this SYMBOL on MARGIN
-     *
-     * @return array
-     */
-    public function exchangeInfo() : ExchangeInfo
-    {
-        $req = self::buildRequest('GET', 'exchangeInfo', [
-            'symbol' => $this->symbol
-        ]);
-        $req->setUri(parent::API_URL . parent::API_PATH . 'exchangeInfo');
-        $res = $this->request($req, self::SEC_NONE);
-        return new ExchangeInfo($res);
     }
 }
