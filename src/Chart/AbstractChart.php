@@ -186,7 +186,7 @@ abstract class AbstractChart extends ArrayObject
         $signal = array_reverse($res[2]);
 
         $macd = [];
-        for ($i = 0; $i < array_key_last($fast); $i++) {
+        for ($i = 0; $i <= array_key_last($fast); $i++) {
             $macd[] = [
                 round($slow[$i], 2),
                 round($fast[$i], 2),
@@ -219,7 +219,7 @@ abstract class AbstractChart extends ArrayObject
         $down = array_reverse($res[2]);
 
         $bbands = [];
-        for ($i = 0; $i < array_key_last($up); $i++) {
+        for ($i = 0; $i <= array_key_last($up); $i++) {
             $bbands[] = [
                 round($up[$i], 2),
                 round($mid[$i], 2),
