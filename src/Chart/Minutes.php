@@ -34,7 +34,7 @@ final class Minutes extends AbstractChart
     {
         if (empty($this->storage)) return true;
 
-        $now   = intval($this[0][0]->tradeTime->getTimestamp() / 60);
+        $now   = intval($this->storage[0][0]->tradeTime->getTimestamp() / 60);
         $trade = intval($trade->tradeTime->getTimestamp() / 60);
 
         return $now != $trade;
@@ -54,7 +54,7 @@ final class Minutes extends AbstractChart
             array_unshift($this->storage, new Kline([$trade]));
         }
         else {
-            $this[0][1] = $trade;
+            $this->storage[0][1] = $trade;
             if ($this->trader) array_pop($this->trader);
         }
         $this->trader[] = $trade->price;

@@ -37,6 +37,6 @@ final class Seconds extends AbstractChart
     public function isNew(Trade $trade) : bool
     {
         if (empty($this->storage)) return true;
-        return $trade->tradeTime != $this[0][0]->tradeTime;
+        return $trade->tradeTime != $this->storage[0][0]->tradeTime;
     }
 }

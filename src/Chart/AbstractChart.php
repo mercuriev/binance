@@ -58,13 +58,13 @@ abstract class AbstractChart extends ArrayObject
         } else {
             array_pop($this->trader);
         }
-        $this[0]->append($trade);
+        $this->storage[0]->append($trade);
         $this->trader[] = $trade->price;
     }
 
     public function isReady(): bool
     {
-        return isset($this[self::SIZE - 1]);
+        return isset($this->storage[self::SIZE - 1]);
     }
 
     public function last() : Kline
@@ -74,7 +74,7 @@ abstract class AbstractChart extends ArrayObject
 
     public function now() : float
     {
-        return $this[0]->getPrice();
+        return $this->storage[0]->getPrice();
     }
 
     public function min(int $period = self::SIZE)
@@ -94,7 +94,7 @@ abstract class AbstractChart extends ArrayObject
         $key = 0;
         while ($key < $period) {
             $level = is_float($ind) ? $ind : $ind[$key];
-            if ($this[$key]->high() > $level) return false;
+            if ($this->storage[$key]->high() > $level) return false;
             $key++;
         }
         return true;
@@ -105,7 +105,7 @@ abstract class AbstractChart extends ArrayObject
         $key = 0;
         while ($key < $period) {
             $level = is_float($ind) ? $ind : $ind[$key];
-            if ($this[$key]->low() < $level) return false;
+            if ($this->storage[$key]->low() < $level) return false;
             $key++;
         }
         return true;
@@ -129,7 +129,7 @@ abstract class AbstractChart extends ArrayObject
 
         /** @var Kline $kline */
         foreach ($this as $k => $kline) {
-            $last = isset($this[$k-1]) ? $this[$k-1]->getClose() : $kline->getOpen();
+            $last = isset($this->storage[$k-1]) ? $this->storage[$k-1]->getClose() : $kline->getOpen();
             if ($kline->getClose() > $last) $up++;
             else $down++;
             if (!$period--) break;
@@ -145,7 +145,7 @@ abstract class AbstractChart extends ArrayObject
     {
         $more = $less = 0;
         for ($i = 0; $i < $period; $i++) {
-            if ($this[$i]->getClose() > $ind[$i]) $more++;
+            if ($this->storage[$i]->getClose() > $ind[$i]) $more++;
             else $less++;
         }
         return round($more / ($more + $less), 2);
