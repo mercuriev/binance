@@ -17,7 +17,7 @@ use function Binance\truncate;
 class MockSpotApi extends SpotApi
 {
     protected Account $account;
-    protected Trade $now;
+    protected Trade $trade;
     protected array $orders = [];
 
     /** @noinspection PhpMissingParentConstructorInspection */
@@ -71,7 +71,10 @@ class MockSpotApi extends SpotApi
      */
     public function __invoke(Trade $trade) : Trade
     {
-        $this->now = $trade;
+        $this->trade = $trade;
+
+        $trade->buyerOrderId  ??= 0;
+        $trade->sellerOrderId ??= 0;
 
         foreach ($this->orders as $k => $order)
         {
@@ -101,8 +104,8 @@ class MockSpotApi extends SpotApi
 
                 $filled->executedQty = $filled->origQty;
                 $filled->cummulativeQuoteQty = $filled->origQty * $trade->price;
-                $trade['b'] = $filled->orderId;
-                $trade['q'] = $filled->origQty;
+                $trade->buyerOrderId = $filled->orderId;
+                $trade->quantity = $filled->origQty;
                 $this->account->quoteAsset->locked  = bcsub($this->account->quoteAsset->locked, bcmul($filled->origQty, $trade->price));
                 $this->account->baseAsset->free     = bcadd($this->account->baseAsset->free, $filled->origQty);
             }
@@ -134,8 +137,8 @@ class MockSpotApi extends SpotApi
 
                 $filled->executedQty = $filled->origQty;
                 $filled->cummulativeQuoteQty = $filled->origQty * $trade->price;
-                $trade['a'] = $filled->orderId;
-                $trade['q'] = $filled->origQty;
+                $trade->sellerOrderId = $filled->orderId;
+                $trade->quantity = $filled->origQty;
             }
         }
         return $trade;
@@ -158,13 +161,13 @@ class MockSpotApi extends SpotApi
             if (isset($order->price)) {
                 $price = $order instanceof OcoOrder ? $order->stopPrice : $order->price;
             }
-            else $price = $this->now['p'];
+            else $price = $this->trade->price;
             $quote = bcmul($price, $order->quantity, 5);
             $qty   = $order->quantity;
         }
         else {
             $quote = $order->quoteOrderQty;
-            $qty   = bcdiv($quote, $this->now['p'], 5);
+            $qty   = bcdiv($quote, $this->trade->price, 5);
         }
         if ($quote <= 10)
             throw new \LogicException('Too low quantity');
@@ -189,10 +192,10 @@ class MockSpotApi extends SpotApi
             return $order;
         }
         else if ($order instanceof OcoOrder) {
-            if (($order->isSell() && ($order->stopPrice >= $this->now['p'] || $order->stopPrice > $order->price))
-                || ($order->isBuy()  && ($order->stopPrice <= $this->now['p'] || $order->stopPrice < $order->price))
-                || ($order->isBuy() && $order->price < $this->now['p'])
-                || ($order->isSell() && $order->price < $this->now['p'])
+            if (($order->isSell() && ($order->stopPrice >= $this->trade->price || $order->stopPrice > $order->price))
+                || ($order->isBuy()  && ($order->stopPrice <= $this->trade->price || $order->stopPrice < $order->price))
+                || ($order->isBuy() && $order->price < $this->trade->price)
+                || ($order->isSell() && $order->price < $this->trade->price)
             )
                 throw new \OutOfBoundsException('Stop price is higher than market.');
 
@@ -202,7 +205,7 @@ class MockSpotApi extends SpotApi
             $order->status = 'NEW';
             $order->origQty = $order->quantity;
             $order->executedQty = $order->cummulativeQuoteQty = 0;
-            $order->transactTime = $this->now->tradeTime->getTimestamp() * 1000;
+            $order->transactTime = $this->trade->tradeTime->getTimestamp() * 1000;
         }
         $order->orderId = intval(microtime(true) * 10000) + rand();
 
@@ -228,7 +231,7 @@ class MockSpotApi extends SpotApi
         $order->contingencyType = 'OCO';
         $order->listStatusType = 'EXEC_STARTED';
         $order->listOrderStatus = 'EXECUTING';
-        $order->transactionTime = $this->now['T'];
+        $order->transactionTime = $this->trade->time->getTimestamp() * 1000;
         $order->orders = [];
 
         for ($i = 0; $i < 2; $i++) {
@@ -308,24 +311,24 @@ class MockSpotApi extends SpotApi
     {
         if ($order->isSell()) {
             // sell orders always have quantity
-            $quote  = $order->quantity * $this->now['p'];
+            $quote  = $order->quantity * $this->trade->price;
             $qty    = $order->quantity;
         }
         else {
             $quote  = $order->quoteOrderQty;
-            $qty    = round($quote / $this->now['p'], 5);
+            $qty    = round($quote / $this->trade->price, 5);
         }
         $order->origQty = $order->executedQty = $order->quantity = $qty;
         $order->cummulativeQuoteQty = min(
             $quote,
-            bcmul( $order->origQty, $this->now['p'], 5)
+            bcmul( $order->origQty, $this->trade->price, 5)
         );
         $order->status = 'FILLED';
         $order->orderId = intval(microtime(true) * 10000) + rand();
 
         if ($order instanceof MarketOrder) {
             $order->fills = [
-                ['price' => $this->now['p'], 'qty' => $qty]
+                ['price' => $this->trade->price, 'qty' => $qty]
             ];
         }
     }

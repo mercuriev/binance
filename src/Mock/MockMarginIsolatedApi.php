@@ -41,21 +41,21 @@ class MockMarginIsolatedApi extends MockSpotApi
      */
     public function __invoke(Trade $trade) : Trade
     {
-        $this->now = $trade;
+        $this->trade = $trade;
 
         foreach ($this->orders as $k => $order)
         {
             if ($order->isFilled()) continue;
 
             if ($order->isBuy()) {
-                if ($order instanceof OcoOrder && $trade['p'] >= $order->getStopPrice()) {
+                if ($order instanceof OcoOrder && $trade->price >= $order->getStopPrice()) {
                     $filled = $order->getStopOrder();
                     $filled->status = 'FILLED';
                     $order->getLimitOrder()->status = 'EXPIRED';
                     $order->listOrderStatus = 'ALL_DONE';
                     $order->listStatusType = 'ALL_DONE';
                 }
-                elseif ($trade['p'] <= $order->price) {
+                elseif ($trade->price <= $order->price) {
                     if ($order instanceof OcoOrder) {
                         $filled = $order->getLimitOrder();
                         $order->getStopOrder()->status = 'EXPIRED';
@@ -70,23 +70,23 @@ class MockMarginIsolatedApi extends MockSpotApi
                 else continue;
 
                 $filled->executedQty = $filled->origQty;
-                $filled->cummulativeQuoteQty = $filled->origQty * $trade['p'];
+                $filled->cummulativeQuoteQty = $filled->origQty * $trade->price;
                 $trade['b'] = $filled->orderId;
                 $trade['q'] = $filled->origQty;
-                $this->account['quoteAsset']['locked']  = bcsub($this->account['quoteAsset']['locked'], bcmul($filled->origQty, $trade['p']));
+                $this->account['quoteAsset']['locked']  = bcsub($this->account['quoteAsset']['locked'], bcmul($filled->origQty, $trade->price));
                 $this->account['baseAsset']['free']     = bcadd($this->account['baseAsset']['free'], $filled->origQty);
             }
             else if ($order->isSell()) {
-                if ($order instanceof OcoOrder && $trade['p'] <= $order->stopPrice) {
+                if ($order instanceof OcoOrder && $trade->price <= $order->stopPrice) {
                     $filled = $order->getStopOrder();
                     $filled->status = 'FILLED';
                     $order->getLimitOrder()->status = 'EXPIRED';
                     $order->listOrderStatus = 'ALL_DONE';
                     $order->listStatusType = 'ALL_DONE';
-                    $this->account['quoteAsset']['free']    = bcadd($this->account['quoteAsset']['free'], bcmul($filled->origQty, $trade['p']));
+                    $this->account['quoteAsset']['free']    = bcadd($this->account['quoteAsset']['free'], bcmul($filled->origQty, $trade->price));
                     $this->account['baseAsset']['locked']   = bcsub($this->account['baseAsset']['locked'], $filled->origQty);
                 }
-                elseif ($trade['p'] >= $order->price) {
+                elseif ($trade->price >= $order->price) {
                     if ($order instanceof OcoOrder) {
                         $filled = $order->getLimitOrder();
                         $order->getStopOrder()->status = 'EXPIRED';
@@ -97,13 +97,13 @@ class MockMarginIsolatedApi extends MockSpotApi
                         $filled = $order;
                     }
                     $filled->status = 'FILLED';
-                    $this->account['quoteAsset']['free']    = bcadd($this->account['quoteAsset']['free'], bcmul($filled->origQty, $trade['p']));
+                    $this->account['quoteAsset']['free']    = bcadd($this->account['quoteAsset']['free'], bcmul($filled->origQty, $trade->price));
                     $this->account['baseAsset']['locked']   = bcsub($this->account['baseAsset']['locked'], $filled->origQty);
                 }
                 else continue;
 
                 $filled->executedQty = $filled->origQty;
-                $filled->cummulativeQuoteQty = $filled->origQty * $trade['p'];
+                $filled->cummulativeQuoteQty = $filled->origQty * $trade->price;
                 $trade['a'] = $filled->orderId;
                 $trade['q'] = $filled->origQty;
             }
@@ -123,7 +123,7 @@ class MockMarginIsolatedApi extends MockSpotApi
 
     public function getAccount(array $params = null)
     {
-        $this->account['indexPrice'] = isset($this->now) ? $this->now['p'] : 1000000;
+        $this->account['indexPrice'] = isset($this->trade) ? $this->trade->price : 1000000;
         $this->account['quoteAsset']['netAssetOfBtc'] = round(
             ($this->account['quoteAsset']['free'] + $this->account['quoteAsset']['locked']) / $this->account['indexPrice'],
             5
