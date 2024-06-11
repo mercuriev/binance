@@ -18,7 +18,7 @@ use function Binance\json_encode_pretty;
  */
 abstract class AbstractChart extends ArrayObject
 {
-    const SIZE = 180;
+    const SIZE = 60;
 
     /** Kline close price index for trader_*() functions */
     protected array $trader = [];
