@@ -4,15 +4,21 @@ namespace Binance\Mock;
 
 use Binance\Account\Account;
 use Binance\Event\Trade;
+use Binance\Exception\InsuficcientBalance;
+use Binance\Order\AbstractOrder;
+use Binance\Order\LimitOrder;
+use Binance\Order\MarketOrder;
 use Binance\Order\OcoOrder;
+use Binance\Order\StopOrder;
 use Binance\SpotApi;
 use Laminas\Http\Request;
+use function Binance\truncate;
 
 class MockSpotApi extends SpotApi
 {
-    private Account $account;
-    private Trade $now;
-    private array $orders = [];
+    protected Account $account;
+    protected Trade $now;
+    protected array $orders = [];
 
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct()
@@ -143,6 +149,185 @@ class MockSpotApi extends SpotApi
     public function getOpenOrders(): array
     {
         return $this->orders;
+    }
+
+    public function post(AbstractOrder $order): AbstractOrder
+    {
+        // filter MIN_NOTIONAL, check balance is enough
+        if (isset($order->quantity)) {
+            if (isset($order->price)) {
+                $price = $order instanceof OcoOrder ? $order->stopPrice : $order->price;
+            }
+            else $price = $this->now['p'];
+            $quote = bcmul($price, $order->quantity, 5);
+            $qty   = $order->quantity;
+        }
+        else {
+            $quote = $order->quoteOrderQty;
+            $qty   = bcdiv($quote, $this->now['p'], 5);
+        }
+        if ($quote <= 10)
+            throw new \LogicException('Too low quantity');
+        if ($order->isBuy()         && $quote > $this->account->quoteAsset->free + 0.01)    // php think 0.9002 > 0.9002 :(
+            throw new InsuficcientBalance("Tried to buy $quote");
+        else if ($order->isSell()   && $qty   > $this->account->baseAsset->free + 0.00001)
+            throw new InsuficcientBalance("Tried to sell $qty");
+
+        // transform order to be like api reply
+        if ($order instanceof MarketOrder) {
+            $this->fill($order);
+            $quote = truncate($order->cummulativeQuoteQty, 2);
+            $qty = $order->getQty();
+            if ('BUY' == $order->side) {
+                $this->account->quoteAsset->free    = bcsub($this->account->quoteAsset->free, $quote);
+                $this->account->baseAsset->free     = bcadd($this->account->baseAsset->free, $qty);
+            }
+            else if ('SELL' == $order->side) {
+                $this->account->baseAsset->free     = bcsub($this->account->baseAsset->free, $qty);
+                $this->account->quoteAsset->free    = bcadd($this->account->quoteAsset->free, $quote);
+            }
+            return $order;
+        }
+        else if ($order instanceof OcoOrder) {
+            if (($order->isSell() && ($order->stopPrice >= $this->now['p'] || $order->stopPrice > $order->price))
+                || ($order->isBuy()  && ($order->stopPrice <= $this->now['p'] || $order->stopPrice < $order->price))
+                || ($order->isBuy() && $order->price < $this->now['p'])
+                || ($order->isSell() && $order->price < $this->now['p'])
+            )
+                throw new \OutOfBoundsException('Stop price is higher than market.');
+
+            $this->fillOco($order);
+        }
+        else {
+            $order->status = 'NEW';
+            $order->origQty = $order->quantity;
+            $order->executedQty = $order->cummulativeQuoteQty = 0;
+            $order->transactTime = $this->now->tradeTime->getTimestamp() * 1000;
+        }
+        $order->orderId = intval(microtime(true) * 10000) + rand();
+
+        // update balances
+        if ('BUY' == $order->side) {
+            $this->account->quoteAsset->free    = bcsub($this->account->quoteAsset->free, $quote);
+            $this->account->quoteAsset->locked  = bcadd($this->account->quoteAsset->locked, $quote);
+        }
+        else if ('SELL' == $order->side) {
+            $this->account->baseAsset->free     = bcsub($this->account->baseAsset->free, $qty);
+            $this->account->baseAsset->locked   = bcadd($this->account->baseAsset->locked, $qty);
+        }
+
+        if (!$order instanceof MarketOrder)
+            $this->orders[] = clone $order;
+
+        return $order;
+    }
+
+    public function fillOco(OcoOrder $order)
+    {
+        $order->orderListId = intval(microtime(true) * 10000) + rand();
+        $order->contingencyType = 'OCO';
+        $order->listStatusType = 'EXEC_STARTED';
+        $order->listOrderStatus = 'EXECUTING';
+        $order->transactionTime = $this->now['T'];
+        $order->orders = [];
+
+        for ($i = 0; $i < 2; $i++) {
+            if ($i == 0) {
+                $o = new StopOrder();
+                $o->stopPrice = $order->stopLimitPrice;
+            }
+            else {
+                $o = new LimitOrder();
+                $o->type = 'LIMIT_MAKER'; // it differs for OCO
+            }
+            $o->side = $order->side;
+            $o->orderListId = $order->orderListId;
+            $o->orderId = $order->orderListId + $i + 1;
+            $o->clientOrderId = 'mock';
+            $o->transactTime = $order->transactionTime;
+            $o->price = $order->price;
+            $o->status = 'NEW';
+            $o->origQty = $order->quantity;
+            $o->executedQty = $o->cummulativeQuoteQty = 0;
+            $order->orderReports[$i] = $o;
+        }
+
+        return $order;
+    }
+
+    public function cancel(int|AbstractOrder $order): AbstractOrder
+    {
+        $price = $order instanceof OcoOrder ? $order->stopPrice : $order->price;
+        $quote = (float) bcmul($price, $order->quantity, 5);
+        $qty   = $order->quantity;
+
+        if ($order instanceof OcoOrder) {
+            foreach ($this->orders as $k => $our) {
+                if ($order->getId() == $our->getId()) {
+                    if ($our->isNew()) {
+                        $order->listOrderStatus = 'ALL_DONE';
+                        $order->listStatusType = 'ALL_DONE';
+                        foreach ($order->orderReports as $o) $o->status = 'EXPIRED';
+                        unset($this->orders[$k]); // cancel it
+                    }
+                    else {
+                        unset($this->orders[$k]);
+                        return $order->merge($our);
+                    }
+                }
+            }
+        }
+        else {
+            foreach ($this->orders as $k => $our) {
+                if ($order->orderId == $our->orderId) {
+                    if ('NEW' == $our->status) {
+                        $order->status = 'CANCELED';
+                        unset($this->orders[$k]); // cancel it
+                    }
+                    else {
+                        unset($this->orders[$k]);
+                        return $order->merge($our);
+                    }
+                }
+            }
+        }
+
+        if ($order->isBuy()) {
+            $this->account->quoteAsset->free    = bcadd($this->account->quoteAsset->free, $quote);
+            $this->account->quoteAsset->locked  = bcsub($this->account->quoteAsset->locked, $quote);
+        }
+        if ($order->isSell()) {
+            $this->account->baseAsset->free     = bcadd($this->account->baseAsset->free, $qty);
+            $this->account->baseAsset->locked   = bcsub($this->account->baseAsset->locked, $qty);
+        }
+
+        return $order;
+    }
+
+    protected function fill(AbstractOrder $order)
+    {
+        if ($order->isSell()) {
+            // sell orders always have quantity
+            $quote  = $order->quantity * $this->now['p'];
+            $qty    = $order->quantity;
+        }
+        else {
+            $quote  = $order->quoteOrderQty;
+            $qty    = round($quote / $this->now['p'], 5);
+        }
+        $order->origQty = $order->executedQty = $order->quantity = $qty;
+        $order->cummulativeQuoteQty = min(
+            $quote,
+            bcmul( $order->origQty, $this->now['p'], 5)
+        );
+        $order->status = 'FILLED';
+        $order->orderId = intval(microtime(true) * 10000) + rand();
+
+        if ($order instanceof MarketOrder) {
+            $order->fills = [
+                ['price' => $this->now['p'], 'qty' => $qty]
+            ];
+        }
     }
 
     public function request(Request $req, string $security = self::SEC_SIGNED): array
