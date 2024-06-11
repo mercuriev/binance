@@ -44,22 +44,22 @@ abstract class AbstractChart extends ArrayObject
     }
 
     /**
-     * @param Trade $value
+     * @param Trade $trade
      * @return void
      */
-    public function append(mixed $value): void
+    public function append(mixed $trade): void
     {
-        if (!$value instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
+        if (!$trade instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
         if (array_key_last($this->storage) >= self::SIZE) array_pop($this->storage);
         if (array_key_last($this->trader) >= self::SIZE) array_shift($this->trader);
 
-        if ($this->isNew($value)) {
+        if ($this->isNew($trade)) {
             array_unshift($this->storage, new Kline([]));
         } else {
             array_pop($this->trader);
         }
-        $this[0]->append($value);
-        $this->trader[] = (float)$value['p'];
+        $this[0]->append($trade);
+        $this->trader[] = $trade->price;
     }
 
     public function isReady(): bool

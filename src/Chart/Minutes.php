@@ -34,8 +34,8 @@ final class Minutes extends AbstractChart
     {
         if (empty($this->storage)) return true;
 
-        $now   = intval($this[0]->last()['T'] / 1000 / 60);
-        $trade = intval($trade['T'] / 1000 / 60);
+        $now   = intval($this[0][0]->tradeTime->getTimestamp() / 60);
+        $trade = intval($trade->tradeTime->getTimestamp() / 60);
 
         return $now != $trade;
     }
@@ -43,20 +43,20 @@ final class Minutes extends AbstractChart
     /**
      * Minutes klines hold only open/close prices.
      */
-    public function append(mixed $value): void
+    public function append(mixed $trade): void
     {
-        if (!$value instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
+        if (!$trade instanceof Trade) throw new \InvalidArgumentException('Must be a Trade.');
         if (array_key_last($this->storage) >= self::SIZE) array_pop($this->storage);
         if (array_key_last($this->trader) >= self::SIZE) array_shift($this->trader);
 
 
-        if ($this->isNew($value)) {
-            array_unshift($this->storage, new Kline([$value]));
+        if ($this->isNew($trade)) {
+            array_unshift($this->storage, new Kline([$trade]));
         }
         else {
-            $this[0][1] = $value;
+            $this[0][1] = $trade;
             if ($this->trader) array_pop($this->trader);
         }
-        $this->trader[] = (float) $value['p'];
+        $this->trader[] = $trade->price;
     }
 }
