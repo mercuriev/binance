@@ -6,8 +6,10 @@ use Laminas\Http\Response;
 
 class InsuficcientBalance extends BinanceException
 {
-    public function __construct(Request $req, Response|array $res)
+    public function __construct(string|Request $req, null|Response|array $res = null)
     {
+        if (is_string($req)) return parent::__construct($req);
+
         parent::__construct($req, $res);
 
         $o = $req->getPost();
