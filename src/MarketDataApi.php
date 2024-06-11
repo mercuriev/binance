@@ -100,10 +100,11 @@ class MarketDataApi extends AbstractApi
                 $trade->symbol = $symbol;
                 array_unshift($trades, $trade);
 
-                if (!$since || $since > $trade->tradeTime) {
+                if ($since && $since > $trade->tradeTime) {
                     return $trades;
                 }
             }
+            if (!$since) return $trades;
             /** @noinspection PhpUndefinedVariableInspection */
             $params['fromId'] = (@$params['fromId'] ?: $v['id']) - $params['limit'];
         }
