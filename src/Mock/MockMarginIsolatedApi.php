@@ -12,7 +12,7 @@ use Binance\Event\Trade;
 use Binance\Account\Account;
 use function Binance\truncate;
 
-class MockBinance extends AbstractApi
+class MockMarginIsolatedApi extends AbstractApi
 {
     private Trade $now;
     private array $orders = [];
