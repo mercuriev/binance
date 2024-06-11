@@ -14,7 +14,6 @@ class AggTrade extends Event
     public \DateTime $tradeTime;
     public bool      $buyerIsMaker;
 
-    /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
     {
         parent::__construct($payload);

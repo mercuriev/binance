@@ -24,7 +24,6 @@ class Kline extends Event
     public float $takerBuyBaseAssetVolume;
     public float $takerBuyQuoteAssetVolume;
 
-    /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $payload)
     {
         parent::__construct($payload);
