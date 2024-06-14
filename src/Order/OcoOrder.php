@@ -219,4 +219,33 @@ class OcoOrder extends AbstractOrder
         $this->stopClientOrderId = "$id-stop";
         return $this;
     }
+
+    public function oneline(): string
+    {
+        $type = 'OCO';
+
+        $values = [
+            $this->side,
+            $type,
+            match ($type) {
+                'STOP'      => $this->stopPrice,
+                'MARKET'    => $this->getExecutedPrice(),
+                default     => $this->price
+            }
+        ];
+        if ($this->isFilled()) {
+            if ('SELL' == $this->side) {
+                $tail = ' : %-8.5f -> %-8.2f';
+                $values[] = $this->getExecutedQty();
+                $values[] = $this->getExecutedAmount();
+            }
+            else {
+                $tail = ' : %-8.2f -> %-8.5f';
+                $values[] = $this->getExecutedAmount();
+                $values[] = $this->getExecutedQty();
+            }
+        } else $tail = '';
+
+        return vsprintf("%-4s %6s : %.2f : $tail", $values);
+    }
 }
