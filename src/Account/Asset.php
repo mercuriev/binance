@@ -8,12 +8,12 @@ class Asset extends AbstractPayload
 {
     public string $asset;
     public bool   $borrowEnabled;
-    public float  $borrowed;
-    public float  $free;
-    public float  $interest;
-    public float  $locked;
-    public float  $netAsset;
-    public float  $netAssetOfBtc;
+    public string  $borrowed;
+    public string  $free;
+    public string  $interest;
+    public string  $locked;
+    public string  $netAsset;
+    public string  $netAssetOfBtc;
     public bool   $repayEnabled;
-    public float  $totalAsset;
+    public string  $totalAsset;
 }
