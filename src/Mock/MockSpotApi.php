@@ -57,6 +57,12 @@ class MockSpotApi extends SpotApi
                             'free' => '10000.00000000',
                             'locked' => '0.00000000',
                         ),
+                    2 =>
+                        array (
+                            'asset' => 'ETH',
+                            'free' => '0',
+                            'locked' => '0.00000000',
+                        ),
                 ),
             'permissions' =>
                 array (
