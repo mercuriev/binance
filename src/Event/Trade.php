@@ -34,7 +34,8 @@ class Trade extends Event
         $trade->id = $payload['id'];
         $trade->price = $payload['price'];
         $trade->quantity = $payload['qty'];
-        $trade->time = $trade->tradeTime = new \DateTime("@" . intval($payload['time'] / 1000));
+        $trade->time = $trade->tradeTime = (new \DateTime("@" . intval($payload['time'] / 1000)))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         $trade->buyerIsMaker = $payload['isBuyerMaker'];
         return $trade;
     }
