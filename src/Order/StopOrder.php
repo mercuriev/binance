@@ -13,4 +13,16 @@ class StopOrder extends LimitOrder
         $this->stopPrice = $price;
         return parent::setPrice($price);
     }
+
+    public function toLimitOrder()
+    {
+        $order = new LimitOrder([
+            'symbol' => $this->symbol,
+            'side' => $this->side,
+            'quantity' => $this->origQty,
+            'price' => $this->price,
+            'newOrderRespType' => $this->newOrderRespType,
+        ]);
+        return $order;
+    }
 }

@@ -4,8 +4,10 @@ namespace Binance\Mock;
 
 use Binance\Account\Account;
 use Binance\Event\Trade;
+use Binance\Exception\BinanceException;
 use Binance\Exception\InsuficcientBalance;
 use Binance\Order\AbstractOrder;
+use Binance\Order\LimitMakerOrder;
 use Binance\Order\LimitOrder;
 use Binance\Order\MarketOrder;
 use Binance\Order\OcoOrder;
@@ -82,7 +84,7 @@ class MockSpotApi extends SpotApi
         $trade->buyerOrderId  ??= 0;
         $trade->sellerOrderId ??= 0;
 
-        foreach ($this->orders as $k => $order)
+        foreach ($this->orders as $k => &$order)
         {
             if ($order->isFilled()) continue;
 
@@ -117,6 +119,9 @@ class MockSpotApi extends SpotApi
             }
             else if ($order->isSell()) {
                 if ($order instanceof OcoOrder && $trade->price <= $order->stopPrice) {
+                    $order = $order->getStopOrder();
+                    continue;
+
                     $filled = $order->getStopOrder();
                     $filled->status = 'FILLED';
                     $order->getLimitOrder()->status = 'EXPIRED';
@@ -124,6 +129,10 @@ class MockSpotApi extends SpotApi
                     $order->listStatusType = 'ALL_DONE';
                     $this->account->quoteAsset->free    = bcadd($this->account->quoteAsset->free, bcmul($filled->origQty, $trade->price));
                     $this->account->baseAsset->locked   = bcsub($this->account->baseAsset->locked, $filled->origQty);
+                }
+                elseif ($order instanceof StopOrder && $trade->price <= $order->stopPrice) {
+                    $order = $this->stopToLimit($order);
+                    continue;
                 }
                 elseif ($trade->price >= $order->price) {
                     if ($order instanceof OcoOrder) {
@@ -203,9 +212,9 @@ class MockSpotApi extends SpotApi
                 || ($order->isBuy() && $order->price < $this->trade->price)
                 || ($order->isSell() && $order->price < $this->trade->price)
             )
-                throw new \OutOfBoundsException('Stop price is higher than market.');
+                throw new BinanceException('Stop price is higher than market.');
 
-            $this->fillOco($order);
+            $this->buildOco($order);
         }
         else {
             $order->status = 'NEW';
@@ -231,7 +240,7 @@ class MockSpotApi extends SpotApi
         return $order;
     }
 
-    public function fillOco(OcoOrder $order)
+    public function buildOco(OcoOrder $order)
     {
         $order->orderListId = intval(microtime(true) * 10000) + rand();
         $order->contingencyType = 'OCO';
@@ -242,19 +251,23 @@ class MockSpotApi extends SpotApi
 
         for ($i = 0; $i < 2; $i++) {
             if ($i == 0) {
-                $o = new StopOrder();
-                $o->stopPrice = $order->stopLimitPrice;
+                $o = new StopOrder([
+                    'symbol' => $order->symbol,
+                    'side' => $order->side,
+                    'quantity' => $order->quantity,
+                    'stopPrice' => $order->stopPrice,
+                    'price' => $order->stopLimitPrice
+                ]);
             }
             else {
-                $o = new LimitOrder();
-                $o->type = 'LIMIT_MAKER'; // it differs for OCO
+                $o = new LimitMakerOrder();
+                $o->price = $order->price;
             }
             $o->side = $order->side;
             $o->orderListId = $order->orderListId;
             $o->orderId = $order->orderListId + $i + 1;
             $o->clientOrderId = 'mock';
             $o->transactTime = $order->transactionTime;
-            $o->price = $order->price;
             $o->status = 'NEW';
             $o->origQty = $order->quantity;
             $o->executedQty = $o->cummulativeQuoteQty = 0;
@@ -342,5 +355,19 @@ class MockSpotApi extends SpotApi
     public function request(Request $req, string $security = self::SEC_SIGNED): array
     {
         throw new \LogicException('MockSpotApi is not supposed to make real requests.');
+    }
+
+    private function stopToLimit(StopOrder $stopOrder) : LimitOrder
+    {
+        $order = new LimitOrder([
+            'symbol' => $stopOrder->symbol,
+            'side' => $stopOrder->side,
+            'origQty' => $stopOrder->origQty,
+            'price' => $stopOrder->price,
+            'newOrderRespType' => $stopOrder->newOrderRespType,
+            'status' => $stopOrder->status,
+            'orderId' => $stopOrder->orderId,
+        ]);
+        return $order;
     }
 }
