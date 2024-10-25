@@ -222,16 +222,12 @@ class OcoOrder extends AbstractOrder
 
     public function oneline(): string
     {
-        $type = 'OCO';
-
         $values = [
             $this->side,
-            $type,
-            match ($type) {
-                'STOP'      => $this->stopPrice,
-                'MARKET'    => $this->getExecutedPrice(),
-                default     => $this->price
-            }
+            'OCO',
+            $this->stopPrice,
+            $this->stopLimitPrice,
+            $this->price
         ];
         if ($this->isFilled()) {
             if ('SELL' == $this->side) {
@@ -246,6 +242,6 @@ class OcoOrder extends AbstractOrder
             }
         } else $tail = '';
 
-        return vsprintf("%-4s %6s : %.2f : $tail", $values);
+        return vsprintf("%-4s %6s : %.2f, %.2f, %.2f : $tail", $values);
     }
 }
