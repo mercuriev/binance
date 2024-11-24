@@ -1,1 +1,1 @@
-Library with technical indicators access and backtesting.
+Library with technical indicators and backtesting.
